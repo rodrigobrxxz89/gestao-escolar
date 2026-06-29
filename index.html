@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gerenciador Escolar e Financeiro</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --secondary: #2C3E50;
+            --background: #F4F7F6;
+            --card-bg: #FFFFFF;
+            --empty-desk: #E8F0FE;
+            --occupied-desk: #D4EDDA;
+            --text-dark: #333333;
+            --text-light: #777777;
+            --danger: #E74C3C;
+            --success: #2ECC71;
+            --warning: #F1C40F;
+            --info: #9B59B6;
+            --whatsapp: #25D366;
+            --edit: #3498DB;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--background); color: var(--text-dark); padding: 15px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 20px; }
+        header h1 { color: var(--secondary); font-size: 1.8rem; margin-bottom: 5px; }
+        header p { font-size: 0.95rem; color: var(--text-light); }
+
+        /* Abas */
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #DDD; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+        .tab-btn { padding: 12px 20px; font-size: 1rem; font-weight: bold; cursor: pointer; background: none; border: none; color: var(--text-light); border-bottom: 4px solid transparent; transition: all 0.3s; flex: 1; text-align: center; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Formulário de Inserção */
+        .controls { background-color: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .inputs-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
+        .controls input { padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; background-color: #fff; }
+        .w-full-mobile { flex: 1; min-width: 180px; }
+        .w-small-mobile { flex: 0.5; min-width: 110px; }
+        
+        .days-selector { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; background: #F8F9FA; padding: 10px 15px; border-radius: 6px; border: 1px solid #E0E0E0; }
+        .days-selector label { display: flex; align-items: center; gap: 5px; font-weight: bold; cursor: pointer; }
+        .days-selector input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
+        
+        .btn-add { background-color: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: background 0.3s; min-width: 150px; height: 100%; flex: 1; }
+        .btn-add:hover { background-color: #357ABD; }
+
+        /* Dashboards (Sala e Financeiro) */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .dash-card { background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); }
+        .dash-card.total { border-left-color: var(--secondary); }
+        .dash-card.success { border-left-color: var(--success); }
+        .dash-card.warning { border-left-color: var(--warning); }
+        .dash-card.info { border-left-color: var(--info); }
+        .dash-card h3 { font-size: 0.85rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 5px; }
+        .dash-card p { font-size: 1.5rem; font-weight: bold; color: var(--secondary); }
+
+        /* Carteiras */
+        .week-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .day-card { background-color: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .day-header { border-bottom: 2px solid var(--background); padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .day-header h2 { color: var(--secondary); font-size: 1.2rem; }
+        .day-stats { font-size: 0.85rem; color: var(--text-light); background: #F0F3F4; padding: 4px 8px; border-radius: 12px; }
+        .desks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .desk { min-height: 95px; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 12px 5px; position: relative; }
+        .desk.empty { background-color: var(--empty-desk); border: 2px dashed #AEC4EA; color: #6C8EBF; }
+        .desk.occupied { background-color: var(--occupied-desk); border: 2px solid #A3D8B1; color: #2D6A4F; }
+        .desk .student-name { font-weight: bold; font-size: 0.95rem; max-width: 95%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .payment-badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 10px; margin-top: 6px; font-weight: bold; }
+        .badge-paid { background-color: #A3E4D7; color: #117A65; }
+        .badge-pending { background-color: #F9E79F; color: #7D6608; }
+        .desk .delete-btn { position: absolute; top: -5px; right: -5px; background-color: var(--danger); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 2; }
+
+        /* Tabela Financeira */
+        .table-container { background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table-container h2 { margin-bottom: 15px; color: var(--secondary); font-size: 1.2rem; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 800px; }
+        th, td { padding: 12px 10px; border-bottom: 1px solid #E0E0E0; font-size: 0.95rem; }
+        th { background-color: #F8F9FA; color: var(--secondary); font-weight: bold; white-space: nowrap; }
+        tr.pending-row { background-color: #FEF9E7; }
+        .parent-info { font-size: 0.9rem; color: #555; }
+        .whatsapp-link { display: inline-flex; align-items: center; gap: 4px; color: var(--whatsapp); text-decoration: none; font-weight: bold; margin-top: 2px; }
+        .days-badge-container { display: flex; gap: 4px; flex-wrap: wrap; }
+        .day-badge { background: #E2E8F0; color: #475569; font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; }
+        .action-btns { display: flex; gap: 8px; }
+        .btn-edit { background: var(--edit); color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+        .btn-delete { background: var(--danger); color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+
+        /* Modal de Edição */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: var(--card-bg); padding: 25px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .modal-content h2 { margin-bottom: 15px; color: var(--secondary); }
+        .modal-form { display: flex; flex-direction: column; gap: 15px; }
+        .modal-form label { font-size: 0.9rem; font-weight: bold; color: var(--text-light); }
+        .modal-form input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 10px; }
+        .modal-actions button { flex: 1; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .btn-save { background: var(--success); color: white; }
+        .btn-cancel { background: #95A5A6; color: white; }
+
+        @media (max-width: 768px) {
+            .inputs-row { flex-direction: column; align-items: stretch; }
+            .days-selector { flex-direction: column; align-items: flex-start; }
+            .btn-add { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Gestão Escolar</h1>
+            <p>Sala de Aula & Fluxo de Mensalidades</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('sala')">Visualização da Sala</button>
+            <button class="tab-btn" onclick="switchTab('financeiro')">Controle Financeiro</button>
+        </div>
+
+        <div class="controls">
+            <div class="inputs-row">
+                <input type="text" id="student-name" class="w-full-mobile" placeholder="Nome do aluno..." autocomplete="off">
+                <input type="text" id="student-parent" class="w-full-mobile" placeholder="Nome do Responsável..." autocomplete="off">
+                <input type="tel" id="student-whatsapp" class="w-full-mobile" placeholder="WhatsApp (só números)">
+                <input type="number" id="student-fee" class="w-small-mobile" placeholder="Valor Mensalidade (R$)" min="0" step="0.01">
+            </div>
+            <div class="days-selector">
+                <span style="color: var(--text-light); font-weight: bold;">Dias da semana:</span>
+                <label><input type="checkbox" value="terca" class="day-cb"> Terça</label>
+                <label><input type="checkbox" value="quarta" class="day-cb"> Quarta</label>
+                <label><input type="checkbox" value="quinta" class="day-cb"> Quinta</label>
+                <button class="btn-add" onclick="addStudent()">Matricular Aluno</button>
+            </div>
+        </div>
+
+        <div id="tab-sala" class="tab-content active">
+            <div class="dashboard-grid">
+                <div class="dash-card total">
+                    <h3>Capacidade Total (Semana)</h3>
+                    <p>18 Vagas</p>
+                </div>
+                <div class="dash-card info">
+                    <h3>Alunos Únicos Matriculados</h3>
+                    <p id="class-unique-students">0</p>
+                </div>
+                <div class="dash-card warning">
+                    <h3>Vagas Livres na Semana</h3>
+                    <p id="class-free-slots">18</p>
+                </div>
+            </div>
+
+            <div class="week-grid">
+                <div class="day-card" id="card-terca"></div>
+                <div class="day-card" id="card-quarta"></div>
+                <div class="day-card" id="card-quinta"></div>
+            </div>
+        </div>
+
+        <div id="tab-financeiro" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="dash-card total">
+                    <h3>A Receber (Mês)</h3>
+                    <p id="fin-total">R$ 0,00</p>
+                </div>
+                <div class="dash-card success">
+                    <h3>Recebido</h3>
+                    <p id="fin-received">R$ 0,00</p>
+                </div>
+                <div class="dash-card warning">
+                    <h3>Pendente</h3>
+                    <p id="fin-pending">R$ 0,00</p>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <h2>Alunos Matriculados e Pagamentos</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aluno</th>
+                            <th>Dias Inscritos</th>
+                            <th>Responsável / Contato</th>
+                            <th>Valor Único</th>
+                            <th>Status (Até dia 10)</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="financial-table-body">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Editar Dados Financeiros</h2>
+            <div class="modal-form">
+                <input type="hidden" id="edit-id">
+                <div>
+                    <label>Responsável</label>
+                    <input type="text" id="edit-parent" placeholder="Nome do Responsável">
+                </div>
+                <div>
+                    <label>WhatsApp</label>
+                    <input type="tel" id="edit-whatsapp" placeholder="Apenas números">
+                </div>
+                <div>
+                    <label>Mensalidade (R$)</label>
+                    <input type="number" id="edit-fee" step="0.01">
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+                    <button class="btn-save" onclick="saveEdit()">Salvar Alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MAX_DESKS = 6;
+        const TOTAL_CAPACITY = MAX_DESKS * 3; // 18 vagas na semana
+        const dayNames = { 'terca': 'Terça', 'quarta': 'Quarta', 'quinta': 'Quinta' };
+
+        let classState = JSON.parse(localStorage.getItem('classStateSecureV5')) || {
+            students: []
+        };
+
+        function updateUI() {
+            localStorage.setItem('classStateSecureV5', JSON.stringify(classState));
+            renderDaysAndSummary();
+            renderFinance();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            if (tabName === 'sala') {
+                document.querySelector('[onclick="switchTab(\'sala\')"]').classList.add('active');
+                document.getElementById('tab-sala').classList.add('active');
+            } else {
+                document.querySelector('[onclick="switchTab(\'financeiro\')"]').classList.add('active');
+                document.getElementById('tab-financeiro').classList.add('active');
+            }
+        }
+
+        function addStudent() {
+            const name = document.getElementById('student-name').value.trim();
+            const parent = document.getElementById('student-parent').value.trim() || 'Não Informado';
+            const whatsapp = document.getElementById('student-whatsapp').value.replace(/\D/g, ''); 
+            const fee = parseFloat(document.getElementById('student-fee').value);
+            const selectedDays = Array.from(document.querySelectorAll('.day-cb:checked')).map(cb => cb.value);
+
+            if (!name) return alert('Insira o nome do aluno.');
+            if (isNaN(fee) || fee < 0) return alert('Insira um valor válido para a mensalidade.');
+            if (selectedDays.length === 0) return alert('Selecione pelo menos um dia da semana para matricular o aluno.');
+
+            for (let day of selectedDays) {
+                const count = classState.students.filter(s => s.days.includes(day)).length;
+                if (count >= MAX_DESKS) {
+                    return alert(`Não é possível matricular. A sala de ${dayNames[day]} já está lotada!`);
+                }
+            }
+
+            classState.students.push({ 
+                id: Date.now(), 
+                name: name, 
+                parent: parent, 
+                whatsapp: whatsapp, 
+                fee: fee, 
+                paid: false,
+                days: selectedDays
+            });
+
+            document.getElementById('student-name').value = '';
+            document.getElementById('student-parent').value = '';
+            document.getElementById('student-whatsapp').value = '';
+            document.getElementById('student-fee').value = '';
+            document.querySelectorAll('.day-cb').forEach(cb => cb.checked = false);
+            
+            updateUI();
+        }
+
+        function removeFromDay(studentId, day) {
+            const student = classState.students.find(s => s.id === studentId);
+            if (!student) return;
+
+            if(confirm(`Remover ${student.name} da aula de ${dayNames[day]}?`)) {
+                student.days = student.days.filter(d => d !== day);
+                if (student.days.length === 0) {
+                    classState.students = classState.students.filter(s => s.id !== studentId);
+                }
+                updateUI();
+            }
+        }
+
+        function deleteStudent(studentId) {
+            if(confirm("ATENÇÃO: Deseja excluir este aluno e remover seu registro financeiro?")) {
+                classState.students = classState.students.filter(s => s.id !== studentId);
+                updateUI();
+            }
+        }
+
+        function togglePayment(studentId) {
+            const student = classState.students.find(s => s.id === studentId);
+            if (student) {
+                student.paid = !student.paid;
+                updateUI();
+            }
+        }
+
+        function openEditModal(studentId) {
+            const student = classState.students.find(s => s.id === studentId);
+            if (!student) return;
+
+            document.getElementById('edit-id').value = student.id;
+            document.getElementById('edit-parent').value = student.parent === 'Não Informado' ? '' : student.parent;
+            document.getElementById('edit-whatsapp').value = student.whatsapp;
+            document.getElementById('edit-fee').value = student.fee;
+
+            document.getElementById('edit-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('edit-modal').classList.remove('active');
+        }
+
+        function saveEdit() {
+            const id = parseInt(document.getElementById('edit-id').value);
+            const parent = document.getElementById('edit-parent').value.trim() || 'Não Informado';
+            const whatsapp = document.getElementById('edit-whatsapp').value.replace(/\D/g, '');
+            const fee = parseFloat(document.getElementById('edit-fee').value);
+
+            if (isNaN(fee) || fee < 0) return alert('Insira um valor financeiro válido.');
+
+            const studentIndex = classState.students.findIndex(s => s.id === id);
+            if (studentIndex > -1) {
+                classState.students[studentIndex].parent = parent;
+                classState.students[studentIndex].whatsapp = whatsapp;
+                classState.students[studentIndex].fee = fee;
+                
+                closeModal();
+                updateUI();
+            }
+        }
+
+        function formatCurrency(value) {
+            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        // Função responsável por renderizar a primeira aba (Resumo e Carteiras)
+        function renderDaysAndSummary() {
+            const days = ['terca', 'quarta', 'quinta'];
+            let totalOccupiedSlots = 0;
+
+            days.forEach(day => {
+                const container = document.getElementById(`card-${day}`);
+                const studentsInDay = classState.students.filter(s => s.days.includes(day));
+                
+                // Contabiliza para o resumo geral da semana
+                totalOccupiedSlots += studentsInDay.length;
+                
+                const availableSeats = MAX_DESKS - studentsInDay.length;
+
+                let html = `
+                    <div class="day-header">
+                        <h2>${dayNames[day]}</h2>
+                        <div class="day-stats">Livre: ${availableSeats} | Ocupado: ${studentsInDay.length}</div>
+                    </div>
+                    <div class="desks-grid">
+                `;
+
+                for (let i = 0; i < MAX_DESKS; i++) {
+                    if (i < studentsInDay.length) {
+                        const student = studentsInDay[i];
+                        const badgeClass = student.paid ? 'badge-paid' : 'badge-pending';
+                        
+                        html += `
+                            <div class="desk occupied">
+                                <button class="delete-btn" onclick="removeFromDay(${student.id}, '${day}')" title="Remover da aula">X</button>
+                                <span class="student-name">${student.name}</span>
+                                <span class="payment-badge ${badgeClass}">${student.paid ? 'Pago' : 'Pendente'}</span>
+                            </div>
+                        `;
+                    } else {
+                        html += `<div class="desk empty"><span>🪑 Vaga</span></div>`;
+                    }
+                }
+                html += `</div>`;
+                container.innerHTML = html;
+            });
+
+            // Atualiza os painéis de resumo no topo da primeira aba
+            const totalFreeSlots = TOTAL_CAPACITY - totalOccupiedSlots;
+            const uniqueStudents = classState.students.length;
+
+            document.getElementById('class-unique-students').innerText = uniqueStudents;
+            document.getElementById('class-free-slots').innerText = totalFreeSlots;
+        }
+
+        function renderFinance() {
+            const tableBody = document.getElementById('financial-table-body');
+            tableBody.innerHTML = '';
+
+            let totals = { expected: 0, received: 0, pending: 0 };
+
+            classState.students.forEach(student => {
+                totals.expected += student.fee;
+                student.paid ? (totals.received += student.fee) : (totals.pending += student.fee);
+
+                const row = document.createElement('tr');
+                if (!student.paid) row.classList.add('pending-row');
+
+                let whatsappHTML = '<span style="color:var(--text-light)">Sem número</span>';
+                if (student.whatsapp) {
+                    whatsappHTML = `<a class="whatsapp-link" href="https://wa.me/55${student.whatsapp}" target="_blank">💬 ${student.whatsapp}</a>`;
+                }
+
+                let daysBadges = student.days.map(d => `<span class="day-badge">${dayNames[d]}</span>`).join('');
+
+                row.innerHTML = `
+                    <td><strong>${student.name}</strong></td>
+                    <td><div class="days-badge-container">${daysBadges}</div></td>
+                    <td class="parent-info">
+                        <div>${student.parent}</div>
+                        ${whatsappHTML}
+                    </td>
+                    <td><strong>${formatCurrency(student.fee)}</strong></td>
+                    <td>
+                        <input type="checkbox" style="width:18px; height:18px; cursor:pointer;" ${student.paid ? 'checked' : ''} onchange="togglePayment(${student.id})">
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-edit" onclick="openEditModal(${student.id})">✎ Editar</button>
+                            <button class="btn-delete" onclick="deleteStudent(${student.id})">🗑️</button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            if (classState.students.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Nenhum aluno matriculado na escola.</td></tr>`;
+            }
+
+            document.getElementById('fin-total').innerText = formatCurrency(totals.expected);
+            document.getElementById('fin-received').innerText = formatCurrency(totals.received);
+            document.getElementById('fin-pending').innerText = formatCurrency(totals.pending);
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
