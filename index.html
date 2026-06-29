@@ -11,7 +11,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
 
         :root {
-            /* Paleta Escolar e Acolhedora */
             --primary: #7E57C2;         
             --primary-hover: #9575CD;   
             --secondary: #FF7043;       
@@ -292,7 +291,7 @@
             <div class="modal-form">
                 <input type="hidden" id="payment-id">
                 <div>
-                    <label>Data em que o pai fez o pagamento:</label>
+                    <label>Data em que o responsável pagou:</label>
                     <input type="date" id="payment-date">
                 </div>
                 <div class="modal-actions">
@@ -342,7 +341,7 @@
 
     let classState = { active: [], inactive: [] };
 
-    // 2. FUNÇÕES DE COMUNICAÇÃO (CRUD)
+    // 2. FUNÇÕES DE COMUNICAÇÃO (CRUD) E LÓGICA DE VIRADA DE MÊS
     async function fetchData() {
         const { data, error } = await db
             .from('alunos')
@@ -351,9 +350,36 @@
 
         if (error) {
             console.error('Erro ao buscar dados:', error);
-            alert('Erro ao conectar com o banco de dados. Verifique o console ou a tabela no Supabase.');
+            alert('Erro ao conectar com o banco de dados.');
             return;
         }
+
+        // --- LÓGICA DE VIRADA DE MÊS AUTOMÁTICA ---
+        const now = new Date();
+        const currentMonth = now.getMonth() + 1;
+        const currentYear = now.getFullYear();
+        let needsReset = false;
+
+        for (let student of data) {
+            // Se o aluno está pago, mas a data do pagamento é de um mês/ano anterior...
+            if (student.status !== 'inativo' && student.paid && student.data_ultimo_pagamento) {
+                const [ano, mes, dia] = student.data_ultimo_pagamento.split('-');
+                if (parseInt(mes) !== currentMonth || parseInt(ano) !== currentYear) {
+                    needsReset = true;
+                    break;
+                }
+            }
+        }
+
+        if (needsReset) {
+            console.log("Virada de mês detectada! Zerando pagamentos...");
+            // Desmarca a caixinha de pagamento de todos os alunos ativos
+            const { error: resetError } = await db.from('alunos').update({ paid: false }).eq('status', 'ativo').eq('paid', true);
+            if (!resetError) {
+                return fetchData(); // Recarrega os dados com as caixinhas vazias
+            }
+        }
+        // ------------------------------------------
 
         classState.active = data.filter(s => s.status !== 'inativo');
         classState.inactive = data.filter(s => s.status === 'inativo');
@@ -424,14 +450,17 @@
     function handlePaymentClick(event, studentId, isCurrentlyPaid) {
         event.preventDefault(); 
         if (isCurrentlyPaid) {
-            if (confirm("Iniciar novo mês? A caixinha ficará desmarcada, mas o pagamento anterior continuará salvo no histórico do aluno.")) {
+            // Se clicar para DESMARCAR (corrigir um erro ou pagamento devolvido)
+            if (confirm("Deseja desmarcar o pagamento deste aluno para o mês atual?")) {
                 updatePaymentStatus(studentId, false);
             }
         } else {
+            // Se clicar para MARCAR (recebeu o dinheiro)
             const student = classState.active.find(s => s.id === studentId);
             document.getElementById('payment-id').value = student.id;
             document.getElementById('payment-student-name').innerText = `Aluno: ${student.nome}`;
             
+            // Sugere a data de hoje por padrão
             const hoje = new Date().toISOString().split('T')[0];
             document.getElementById('payment-date').value = hoje;
             
@@ -441,7 +470,9 @@
     }
 
     async function updatePaymentStatus(studentId, isPaid) {
-        const { error } = await db.from('alunos').update({ paid: isPaid }).eq('id', studentId);
+        // Remove a data de pagamento se for desmarcado para não confundir o reset mensal
+        const updateData = isPaid ? { paid: true } : { paid: false, data_ultimo_pagamento: null };
+        const { error } = await db.from('alunos').update(updateData).eq('id', studentId);
         if (!error) fetchData();
     }
 
@@ -456,6 +487,7 @@
 
         let historico = student.historico_pagamentos || [];
         
+        // Define se foi pontual (até dia 10) ou atrasado
         const diaPagamento = parseInt(dateStr.split('-')[2]);
         const statusPagamento = diaPagamento <= 10 ? 'Pontual' : 'Atrasado';
 
@@ -491,7 +523,7 @@
         const historico = student.historico_pagamentos || [];
         
         if (historico.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum pagamento registrado no sistema ainda.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum pagamento registrado ainda.</td></tr>';
         } else {
             const historicoOrdenado = [...historico].sort((a, b) => new Date(b.data) - new Date(a.data));
             
