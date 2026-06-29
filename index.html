@@ -34,61 +34,30 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
         body { background-color: var(--background); color: var(--text-dark); background-image: radial-gradient(#E1E8ED 1px, transparent 1px); background-size: 20px 20px; }
         
-        /* Oculta o app principal por padrão */
         #main-app { display: none; padding: 20px 15px; }
         .container { max-width: 1200px; margin: 0 auto; }
 
         /* TELA DE LOGIN */
-        #login-screen {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            padding: 20px;
-        }
-        .login-box {
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            border-top: 8px solid var(--primary);
-        }
+        #login-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; }
+        .login-box { background: var(--card-bg); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; border-top: 8px solid var(--primary); }
         .login-box h1 { color: var(--primary); font-size: 2rem; margin-bottom: 10px; font-weight: 800; }
         .login-box p { color: var(--text-light); margin-bottom: 30px; font-weight: 600; }
         .login-form { display: flex; flex-direction: column; gap: 15px; }
-        .login-form input {
-            padding: 15px; border: 2px solid #E0E0E0; border-radius: 12px; font-size: 1rem;
-            font-weight: 600; color: var(--text-dark); transition: border-color 0.3s;
-        }
+        .login-form input { padding: 15px; border: 2px solid #E0E0E0; border-radius: 12px; font-size: 1rem; font-weight: 600; color: var(--text-dark); transition: border-color 0.3s; }
         .login-form input:focus { border-color: var(--primary); outline: none; }
-        .btn-login {
-            background: var(--primary); color: white; border: none; padding: 15px;
-            border-radius: 12px; font-weight: 800; font-size: 1.1rem; cursor: pointer;
-            margin-top: 10px; transition: transform 0.2s, background 0.3s; box-shadow: 0 4px 10px rgba(126, 87, 194, 0.3);
-        }
+        .btn-login { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 1.1rem; cursor: pointer; margin-top: 10px; transition: transform 0.2s, background 0.3s; box-shadow: 0 4px 10px rgba(126, 87, 194, 0.3); }
         .btn-login:hover { background: var(--primary-hover); transform: translateY(-2px); }
         .login-error { color: var(--danger); font-size: 0.9rem; font-weight: bold; display: none; margin-top: 10px; }
 
         /* HEADER DO APP */
-        header { 
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 30px; background: var(--primary); color: white; padding: 25px 30px; 
-            border-radius: 16px; box-shadow: 0 4px 15px rgba(126, 87, 194, 0.2); 
-        }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: var(--primary); color: white; padding: 25px 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(126, 87, 194, 0.2); }
         .header-titles { text-align: left; }
         .header-titles h1 { font-size: 2rem; font-weight: 800; margin-bottom: 5px; }
         .header-titles p { font-size: 1rem; color: #EDE7F6; font-weight: 600; }
-        .btn-logout { 
-            background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.4); 
-            padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s; 
-        }
+        .btn-logout { background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.4); padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         .btn-logout:hover { background: rgba(255,255,255,0.3); }
 
-        /* Abas estilo divisórias */
+        /* Abas */
         .tabs { display: flex; gap: 8px; margin-bottom: 25px; border-bottom: 3px solid #E0E0E0; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; padding-left: 10px; }
         .tab-btn { padding: 12px 25px; font-size: 1.05rem; font-weight: 700; cursor: pointer; background: #EEEEEE; border: none; color: var(--text-light); border-radius: 12px 12px 0 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .tab-btn:hover { background: #E0E0E0; color: var(--primary); }
@@ -97,7 +66,7 @@
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Formulário de Inserção */
+        /* Formulários (Alunos e Despesas) */
         .controls { background-color: var(--card-bg); padding: 20px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.04); border: 1px solid #F0F0F0; }
         .inputs-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
         .controls input { padding: 14px 16px; border: 2px solid #E0E0E0; border-radius: 10px; font-size: 1rem; background-color: #FAFAFA; font-weight: 600; transition: border-color 0.3s; color: var(--text-dark); }
@@ -111,11 +80,12 @@
         .btn-add:hover { background-color: #F4511E; transform: translateY(-2px); }
 
         /* Dashboards */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .dash-card { background: var(--card-bg); padding: 20px; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.03); border-left: 6px solid var(--primary); }
         .dash-card.total { border-left-color: var(--primary); }
         .dash-card.success { border-left-color: var(--success); }
         .dash-card.warning { border-left-color: var(--warning); }
+        .dash-card.danger { border-left-color: var(--danger); }
         .dash-card.info { border-left-color: var(--secondary); }
         .dash-card h3 { font-size: 0.85rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; font-weight: 800;}
         .dash-card p { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); }
@@ -185,6 +155,7 @@
 </head>
 <body>
 
+    <!-- TELA DE LOGIN -->
     <div id="login-screen">
         <div class="login-box">
             <h1>Gestão Escolar</h1>
@@ -198,6 +169,7 @@
         </div>
     </div>
 
+    <!-- APP PRINCIPAL -->
     <div class="container" id="main-app">
         <header>
             <div class="header-titles">
@@ -213,7 +185,8 @@
             <button class="tab-btn" onclick="switchTab('historico')">Histórico de Ex-Alunos</button>
         </div>
 
-        <div class="controls">
+        <!-- Formulário Lançar Alunos (Aparece na Sala) -->
+        <div class="controls" id="form-alunos">
             <div class="inputs-row">
                 <input type="text" id="student-name" class="w-full-mobile" placeholder="Nome do aluno..." autocomplete="off">
                 <input type="text" id="student-parent" class="w-full-mobile" placeholder="Nome do Responsável..." autocomplete="off">
@@ -229,6 +202,7 @@
             </div>
         </div>
 
+        <!-- ABA SALA DE AULA -->
         <div id="tab-sala" class="tab-content active">
             <div class="dashboard-grid">
                 <div class="dash-card total">
@@ -252,22 +226,33 @@
             </div>
         </div>
 
+        <!-- ABA CONTROLE FINANCEIRO -->
         <div id="tab-financeiro" class="tab-content">
+            <!-- 5 Cartões de Resumo do Mês -->
             <div class="dashboard-grid">
                 <div class="dash-card total">
-                    <h3>A Receber (Mês)</h3>
+                    <h3>A Receber (Mensalidades)</h3>
                     <p id="fin-total">R$ 0,00</p>
                 </div>
                 <div class="dash-card success">
-                    <h3>Recebido</h3>
+                    <h3>Recebido (Mês)</h3>
                     <p id="fin-received">R$ 0,00</p>
                 </div>
                 <div class="dash-card warning">
                     <h3>Pendente</h3>
                     <p id="fin-pending">R$ 0,00</p>
                 </div>
+                <div class="dash-card danger">
+                    <h3>Despesas (Mês)</h3>
+                    <p id="fin-despesas">R$ 0,00</p>
+                </div>
+                <div class="dash-card info" id="card-saldo" style="border-left-color: var(--primary);">
+                    <h3>Resultado Líquido (Mês)</h3>
+                    <p id="fin-saldo">R$ 0,00</p>
+                </div>
             </div>
 
+            <!-- Tabela Alunos Ativos -->
             <div class="table-container">
                 <h2>Alunos Ativos e Pagamentos</h2>
                 <table>
@@ -284,8 +269,37 @@
                     <tbody id="financial-table-body"></tbody>
                 </table>
             </div>
+
+            <!-- NOVA SEÇÃO: Lançar Despesas -->
+            <div class="controls" style="margin-top: 30px;">
+                <h2 style="margin-bottom: 15px; color: var(--primary);">Lançar Despesa da Escolinha</h2>
+                <div class="inputs-row">
+                    <input type="text" id="expense-desc" class="w-full-mobile" placeholder="Descrição (ex: Papel, Lanche, Tinta...)">
+                    <input type="number" id="expense-value" class="w-small-mobile" placeholder="Valor Gasto (R$)" min="0" step="0.01">
+                    <input type="date" id="expense-date" class="w-small-mobile">
+                    <button class="btn-add" style="flex: 1; background-color: var(--danger); box-shadow: 0 4px 10px rgba(239, 83, 80, 0.3);" onclick="addExpense()">Registrar Despesa</button>
+                </div>
+            </div>
+
+            <!-- Tabela Histórico de Despesas -->
+            <div class="table-container">
+                <h2>Histórico de Despesas</h2>
+                <p style="color: var(--text-light); font-size: 0.9rem;">Todas as despesas lançadas. O dashboard acima soma apenas os gastos do mês atual.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Valor</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenses-table-body"></tbody>
+                </table>
+            </div>
         </div>
 
+        <!-- ABA HISTÓRICO DE EX-ALUNOS -->
         <div id="tab-historico" class="tab-content">
             <div class="table-container">
                 <h2>Histórico de Ex-Alunos</h2>
@@ -307,26 +321,18 @@
         </div>
     </div>
 
+    <!-- MODAIS DE AÇÃO -->
     <div id="edit-modal" class="modal-overlay">
         <div class="modal-content">
             <h2>Editar Dados do Aluno</h2>
             <div class="modal-form">
                 <input type="hidden" id="edit-id">
-                <div>
-                    <label>Responsável</label>
-                    <input type="text" id="edit-parent" placeholder="Nome do Responsável">
-                </div>
-                <div>
-                    <label>WhatsApp</label>
-                    <input type="tel" id="edit-whatsapp" placeholder="Apenas números">
-                </div>
-                <div>
-                    <label>Mensalidade (R$)</label>
-                    <input type="number" id="edit-fee" step="0.01">
-                </div>
+                <div><label>Responsável</label><input type="text" id="edit-parent" placeholder="Nome do Responsável"></div>
+                <div><label>WhatsApp</label><input type="tel" id="edit-whatsapp" placeholder="Apenas números"></div>
+                <div><label>Mensalidade (R$)</label><input type="number" id="edit-fee" step="0.01"></div>
                 <div class="modal-actions">
                     <button class="btn-cancel" onclick="closeModal('edit-modal')">Cancelar</button>
-                    <button class="btn-save" onclick="saveEdit()">Salvar Alterações</button>
+                    <button class="btn-save" onclick="saveEdit()">Salvar</button>
                 </div>
             </div>
         </div>
@@ -338,13 +344,10 @@
             <p id="delete-student-name" style="color: var(--text-light); font-weight: bold;"></p>
             <div class="modal-form">
                 <input type="hidden" id="delete-id">
-                <div>
-                    <label>Qual o motivo da exclusão?</label>
-                    <input type="text" id="delete-reason" placeholder="Ex: Mudou de cidade, Desistiu...">
-                </div>
+                <div><label>Qual o motivo da exclusão?</label><input type="text" id="delete-reason" placeholder="Ex: Mudou de cidade, Desistiu..."></div>
                 <div class="modal-actions">
                     <button class="btn-cancel" onclick="closeModal('delete-modal')">Cancelar</button>
-                    <button class="btn-delete" style="flex: 1;" onclick="confirmDelete()">Confirmar Exclusão</button>
+                    <button class="btn-delete" style="flex: 1;" onclick="confirmDelete()">Confirmar</button>
                 </div>
             </div>
         </div>
@@ -356,10 +359,7 @@
             <p id="payment-student-name" style="color: var(--text-light); font-weight: bold; margin-bottom: 10px;"></p>
             <div class="modal-form">
                 <input type="hidden" id="payment-id">
-                <div>
-                    <label>Data em que o responsável pagou:</label>
-                    <input type="date" id="payment-date">
-                </div>
+                <div><label>Data em que o responsável pagou:</label><input type="date" id="payment-date"></div>
                 <div class="modal-actions">
                     <button class="btn-cancel" onclick="closeModal('payment-modal')">Cancelar</button>
                     <button class="btn-save" onclick="savePayment()">Confirmar Recebimento</button>
@@ -374,13 +374,7 @@
             <p id="view-history-student-name" style="color: var(--text-light); font-weight: bold; margin-bottom: 15px;"></p>
             <div class="table-container" style="padding: 0; box-shadow: none;">
                 <table style="min-width: 100%; margin-top: 0;">
-                    <thead>
-                        <tr>
-                            <th>Data Recebida</th>
-                            <th>Valor Pago</th>
-                            <th>Avaliação</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Data Recebida</th><th>Valor Pago</th><th>Avaliação</th></tr></thead>
                     <tbody id="view-history-table-body"></tbody>
                 </table>
             </div>
@@ -403,60 +397,36 @@
     const TOTAL_CAPACITY = MAX_DESKS * 3;
     const dayNames = { 'terca': 'Terça', 'quarta': 'Quarta', 'quinta': 'Quinta' };
 
-    let classState = { active: [], inactive: [] };
+    let classState = { active: [], inactive: [], despesas: [] };
 
-    // 2. SISTEMA DE LOGIN E SEGURANÇA (NOVO)
-    
-    // Verifica se já existe alguém logado quando a página abre
+    // Set today's date on expense input by default
+    document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+
+    // 2. SISTEMA DE LOGIN
     async function checkSession() {
         const { data: { session } } = await db.auth.getSession();
-        if (session) {
-            showMainApp();
-            fetchData();
-        } else {
-            showLoginScreen();
-        }
+        if (session) { showMainApp(); fetchData(); } else { showLoginScreen(); }
     }
 
-    // Listener que fica observando se a pessoa logou ou deslogou
     db.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN') {
-            showMainApp();
-            fetchData();
-        } else if (event === 'SIGNED_OUT') {
-            showLoginScreen();
-            classState = { active: [], inactive: [] }; // Apaga os dados da tela por segurança
-        }
+        if (event === 'SIGNED_IN') { showMainApp(); fetchData(); } 
+        else if (event === 'SIGNED_OUT') { showLoginScreen(); classState = { active: [], inactive: [], despesas: [] }; }
     });
 
     async function handleLogin(event) {
-        event.preventDefault(); // Evita recarregar a página
+        event.preventDefault();
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
         const btn = document.getElementById('btn-submit-login');
         const errorMsg = document.getElementById('login-error-msg');
 
-        btn.innerText = "Verificando...";
-        btn.disabled = true;
-        errorMsg.style.display = 'none';
+        btn.innerText = "Verificando..."; btn.disabled = true; errorMsg.style.display = 'none';
 
-        const { error } = await db.auth.signInWithPassword({
-            email: email,
-            password: password,
-        });
-
-        if (error) {
-            errorMsg.style.display = 'block';
-            btn.innerText = "Entrar Seguramente";
-            btn.disabled = false;
-        }
+        const { error } = await db.auth.signInWithPassword({ email: email, password: password });
+        if (error) { errorMsg.style.display = 'block'; btn.innerText = "Entrar Seguramente"; btn.disabled = false; }
     }
 
-    async function handleLogout() {
-        if(confirm("Deseja realmente sair da sua conta?")) {
-            await db.auth.signOut();
-        }
-    }
+    async function handleLogout() { if(confirm("Deseja sair da sua conta?")) await db.auth.signOut(); }
 
     function showLoginScreen() {
         document.getElementById('login-screen').style.display = 'flex';
@@ -472,17 +442,14 @@
         document.getElementById('main-app').style.display = 'block';
     }
 
-
-    // 3. COMUNICAÇÃO COM O BANCO (CRUD)
+    // 3. COMUNICAÇÃO COM O BANCO
     async function fetchData() {
-        const { data, error } = await db
-            .from('alunos')
-            .select('*')
-            .order('nome', { ascending: true }); 
+        // Busca alunos e despesas ao mesmo tempo
+        const { data: alunosData, error: alunosError } = await db.from('alunos').select('*').order('nome', { ascending: true });
+        const { data: despesasData, error: despesasError } = await db.from('despesas').select('*').order('data_despesa', { ascending: false });
 
-        if (error) {
-            console.error('Erro ao buscar dados:', error);
-            // Se der erro de permissão (RLS), o usuário tenta ler algo que não pode
+        if (alunosError) {
+            console.error('Erro ao buscar dados:', alunosError);
             return;
         }
 
@@ -492,12 +459,11 @@
         const currentYear = now.getFullYear();
         let needsReset = false;
 
-        for (let student of data) {
+        for (let student of alunosData) {
             if (student.status !== 'inativo' && student.paid && student.data_ultimo_pagamento) {
                 const [ano, mes, dia] = student.data_ultimo_pagamento.split('-');
                 if (parseInt(mes) !== currentMonth || parseInt(ano) !== currentYear) {
-                    needsReset = true;
-                    break;
+                    needsReset = true; break;
                 }
             }
         }
@@ -508,8 +474,9 @@
         }
         // --------------------------------
 
-        classState.active = data.filter(s => s.status !== 'inativo');
-        classState.inactive = data.filter(s => s.status === 'inativo');
+        classState.active = alunosData.filter(s => s.status !== 'inativo');
+        classState.inactive = alunosData.filter(s => s.status === 'inativo');
+        classState.despesas = despesasData || [];
 
         renderDaysAndSummary();
         renderFinance();
@@ -532,12 +499,9 @@
             if (count >= MAX_DESKS) return alert(`A sala de ${dayNames[day]} já está lotada!`);
         }
 
-        const newStudent = {
-            nome: name, parent: parent, whatsapp: whatsapp, fee: fee, paid: false,
-            days: selectedDays, status: 'ativo', historico_pagamentos: []
-        };
-
+        const newStudent = { nome: name, parent: parent, whatsapp: whatsapp, fee: fee, paid: false, days: selectedDays, status: 'ativo', historico_pagamentos: [] };
         const { error } = await db.from('alunos').insert([newStudent]);
+        
         if (error) return alert('Erro ao salvar o aluno.');
 
         document.getElementById('student-name').value = '';
@@ -555,7 +519,7 @@
         if(confirm(`Remover ${student.nome} da aula de ${dayNames[day]}?`)) {
             const updatedDays = student.days.filter(d => d !== day);
             if (updatedDays.length === 0) {
-                alert("Atenção: O aluno ficará sem dias na semana. Para excluí-lo totalmente, vá no Controle Financeiro e clique na lixeira.");
+                alert("O aluno ficará sem dias na semana. Para excluí-lo totalmente, vá no Controle Financeiro e clique na lixeira.");
             } else {
                 const { error } = await db.from('alunos').update({ days: updatedDays }).eq('id', studentId);
                 if (!error) fetchData();
@@ -593,13 +557,10 @@
 
         historico.push({ data: dateStr, valor: student.fee, status: statusPagamento });
 
-        const { error } = await db.from('alunos').update({ 
-            paid: true, data_ultimo_pagamento: dateStr, historico_pagamentos: historico 
-        }).eq('id', id);
+        const { error } = await db.from('alunos').update({ paid: true, data_ultimo_pagamento: dateStr, historico_pagamentos: historico }).eq('id', id);
 
         if (error) return alert("Erro ao salvar o pagamento.");
-        closeModal('payment-modal');
-        fetchData();
+        closeModal('payment-modal'); fetchData();
     }
 
     function openViewHistoryModal(studentId) {
@@ -675,12 +636,45 @@
         if (!error) { closeModal('edit-modal'); fetchData(); }
     }
 
+    // --- LÓGICA DE DESPESAS ---
+    async function addExpense() {
+        const desc = document.getElementById('expense-desc').value.trim();
+        const val = parseFloat(document.getElementById('expense-value').value);
+        const date = document.getElementById('expense-date').value;
+
+        if (!desc || isNaN(val) || !date) return alert('Preencha todos os campos da despesa.');
+
+        const { error } = await db.from('despesas').insert([{ descricao: desc, valor: val, data_despesa: date }]);
+        if (!error) {
+            document.getElementById('expense-desc').value = '';
+            document.getElementById('expense-value').value = '';
+            document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+            fetchData();
+        } else {
+            alert('Erro ao salvar despesa.');
+        }
+    }
+
+    async function deleteExpense(id) {
+        if (confirm("Excluir esta despesa permanentemente?")) {
+            const { error } = await db.from('despesas').delete().eq('id', id);
+            if (!error) fetchData();
+        }
+    }
+
     // 4. FUNÇÕES DE INTERFACE GERAIS
     function switchTab(tabName) {
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
         document.getElementById(`tab-${tabName}`).classList.add('active');
+        
+        // Esconde o formulário de matricular aluno se não estiver na aba Sala
+        if(tabName === 'sala') {
+            document.getElementById('form-alunos').style.display = 'block';
+        } else {
+            document.getElementById('form-alunos').style.display = 'none';
+        }
     }
 
     function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
@@ -782,9 +776,55 @@
             tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Nenhum aluno ativo no momento.</td></tr>`;
         }
 
+        // --- CÁLCULO DE DESPESAS E SALDO ---
+        let totalDespesasMes = 0;
+        const now = new Date();
+        const currentMonth = now.getMonth() + 1;
+        const currentYear = now.getFullYear();
+
+        const expenseTableBody = document.getElementById('expenses-table-body');
+        expenseTableBody.innerHTML = '';
+        
+        classState.despesas.forEach(exp => {
+            const [ano, mes, dia] = exp.data_despesa.split('-');
+            // Soma apenas despesas do mês atual no dashboard
+            if (parseInt(mes) === currentMonth && parseInt(ano) === currentYear) {
+                totalDespesasMes += Number(exp.valor);
+            }
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${dia}/${mes}/${ano}</strong></td>
+                <td style="color: var(--text-dark); font-weight: 600;">${exp.descricao}</td>
+                <td><strong style="color: var(--danger);">${formatCurrency(exp.valor)}</strong></td>
+                <td><button class="btn-delete" onclick="deleteExpense(${exp.id})" title="Excluir">🗑️</button></td>
+            `;
+            expenseTableBody.appendChild(tr);
+        });
+
+        if (classState.despesas.length === 0) {
+            expenseTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Nenhuma despesa registrada.</td></tr>`;
+        }
+
+        const saldoLiquido = totals.received - totalDespesasMes;
+
         document.getElementById('fin-total').innerText = formatCurrency(totals.expected);
         document.getElementById('fin-received').innerText = formatCurrency(totals.received);
         document.getElementById('fin-pending').innerText = formatCurrency(totals.pending);
+        
+        document.getElementById('fin-despesas').innerText = formatCurrency(totalDespesasMes);
+        
+        const saldoEl = document.getElementById('fin-saldo');
+        const cardSaldo = document.getElementById('card-saldo');
+        saldoEl.innerText = formatCurrency(saldoLiquido);
+
+        if (saldoLiquido >= 0) {
+            saldoEl.style.color = 'var(--success)';
+            cardSaldo.style.borderLeftColor = 'var(--success)';
+        } else {
+            saldoEl.style.color = 'var(--danger)';
+            cardSaldo.style.borderLeftColor = 'var(--danger)';
+        }
     }
 
     function renderHistory() {
@@ -823,7 +863,7 @@
         }
     }
 
-    // 6. INICIA A VERIFICAÇÃO DE LOGIN AO ABRIR O SITE
+    // 6. START
     checkSession();
 
 </script>
