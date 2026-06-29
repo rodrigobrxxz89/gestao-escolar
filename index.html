@@ -32,12 +32,61 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
-        body { background-color: var(--background); color: var(--text-dark); padding: 20px 15px; background-image: radial-gradient(#E1E8ED 1px, transparent 1px); background-size: 20px 20px; }
+        body { background-color: var(--background); color: var(--text-dark); background-image: radial-gradient(#E1E8ED 1px, transparent 1px); background-size: 20px 20px; }
+        
+        /* Oculta o app principal por padrão */
+        #main-app { display: none; padding: 20px 15px; }
         .container { max-width: 1200px; margin: 0 auto; }
 
-        header { text-align: center; margin-bottom: 30px; background: var(--primary); color: white; padding: 25px 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(126, 87, 194, 0.2); }
-        header h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 5px; }
-        header p { font-size: 1.1rem; color: #EDE7F6; font-weight: 600; }
+        /* TELA DE LOGIN */
+        #login-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+        .login-box {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            border-top: 8px solid var(--primary);
+        }
+        .login-box h1 { color: var(--primary); font-size: 2rem; margin-bottom: 10px; font-weight: 800; }
+        .login-box p { color: var(--text-light); margin-bottom: 30px; font-weight: 600; }
+        .login-form { display: flex; flex-direction: column; gap: 15px; }
+        .login-form input {
+            padding: 15px; border: 2px solid #E0E0E0; border-radius: 12px; font-size: 1rem;
+            font-weight: 600; color: var(--text-dark); transition: border-color 0.3s;
+        }
+        .login-form input:focus { border-color: var(--primary); outline: none; }
+        .btn-login {
+            background: var(--primary); color: white; border: none; padding: 15px;
+            border-radius: 12px; font-weight: 800; font-size: 1.1rem; cursor: pointer;
+            margin-top: 10px; transition: transform 0.2s, background 0.3s; box-shadow: 0 4px 10px rgba(126, 87, 194, 0.3);
+        }
+        .btn-login:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .login-error { color: var(--danger); font-size: 0.9rem; font-weight: bold; display: none; margin-top: 10px; }
+
+        /* HEADER DO APP */
+        header { 
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; background: var(--primary); color: white; padding: 25px 30px; 
+            border-radius: 16px; box-shadow: 0 4px 15px rgba(126, 87, 194, 0.2); 
+        }
+        .header-titles { text-align: left; }
+        .header-titles h1 { font-size: 2rem; font-weight: 800; margin-bottom: 5px; }
+        .header-titles p { font-size: 1rem; color: #EDE7F6; font-weight: 600; }
+        .btn-logout { 
+            background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.4); 
+            padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s; 
+        }
+        .btn-logout:hover { background: rgba(255,255,255,0.3); }
 
         /* Abas estilo divisórias */
         .tabs { display: flex; gap: 8px; margin-bottom: 25px; border-bottom: 3px solid #E0E0E0; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; padding-left: 10px; }
@@ -125,20 +174,37 @@
         .btn-cancel { background: #B0BEC5; color: white; }
 
         @media (max-width: 768px) {
+            header { flex-direction: column; gap: 15px; text-align: center; }
+            .header-titles { text-align: center; }
             .inputs-row { flex-direction: column; align-items: stretch; }
             .days-selector { flex-direction: column; align-items: stretch; }
             .btn-add { width: 100%; }
-            header h1 { font-size: 1.8rem; }
             .day-header { flex-direction: column; gap: 10px; align-items: flex-start; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
+    <div id="login-screen">
+        <div class="login-box">
             <h1>Gestão Escolar</h1>
-            <p>Sala de Aula & Fluxo de Mensalidades</p>
+            <p>Área restrita da professora</p>
+            <form class="login-form" onsubmit="handleLogin(event)">
+                <input type="email" id="login-email" placeholder="E-mail" required>
+                <input type="password" id="login-password" placeholder="Senha" required>
+                <div id="login-error-msg" class="login-error">E-mail ou senha incorretos.</div>
+                <button type="submit" class="btn-login" id="btn-submit-login">Entrar Seguramente</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container" id="main-app">
+        <header>
+            <div class="header-titles">
+                <h1>Gestão Escolar</h1>
+                <p>Sala de Aula & Fluxo de Mensalidades</p>
+            </div>
+            <button class="btn-logout" onclick="handleLogout()">Sair da Conta</button>
         </header>
 
         <div class="tabs">
@@ -306,7 +372,6 @@
         <div class="modal-content" style="max-width: 500px;">
             <h2>Relatório de Pagamentos</h2>
             <p id="view-history-student-name" style="color: var(--text-light); font-weight: bold; margin-bottom: 15px;"></p>
-            
             <div class="table-container" style="padding: 0; box-shadow: none;">
                 <table style="min-width: 100%; margin-top: 0;">
                     <thead>
@@ -319,7 +384,6 @@
                     <tbody id="view-history-table-body"></tbody>
                 </table>
             </div>
-
             <div class="modal-actions" style="margin-top: 20px;">
                 <button class="btn-cancel" style="width: 100%" onclick="closeModal('view-history-modal')">Fechar Relatório</button>
             </div>
@@ -329,7 +393,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-    // 1. INICIALIZAÇÃO DO BANCO DE DADOS
+    // 1. CREDENCIAIS DO BANCO
     const SUPABASE_URL = 'https://hxwihjswclaaqgwodqkg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4d2loanN3Y2xhYXFnd29kcWtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3Mzk1OTAsImV4cCI6MjA5ODMxNTU5MH0.WRhyrTuBuVsqqf_CneVjfDq6LROCd17Xsc80FdeEfaw';
 
@@ -341,7 +405,75 @@
 
     let classState = { active: [], inactive: [] };
 
-    // 2. FUNÇÕES DE COMUNICAÇÃO (CRUD) E LÓGICA DE VIRADA DE MÊS
+    // 2. SISTEMA DE LOGIN E SEGURANÇA (NOVO)
+    
+    // Verifica se já existe alguém logado quando a página abre
+    async function checkSession() {
+        const { data: { session } } = await db.auth.getSession();
+        if (session) {
+            showMainApp();
+            fetchData();
+        } else {
+            showLoginScreen();
+        }
+    }
+
+    // Listener que fica observando se a pessoa logou ou deslogou
+    db.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN') {
+            showMainApp();
+            fetchData();
+        } else if (event === 'SIGNED_OUT') {
+            showLoginScreen();
+            classState = { active: [], inactive: [] }; // Apaga os dados da tela por segurança
+        }
+    });
+
+    async function handleLogin(event) {
+        event.preventDefault(); // Evita recarregar a página
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const btn = document.getElementById('btn-submit-login');
+        const errorMsg = document.getElementById('login-error-msg');
+
+        btn.innerText = "Verificando...";
+        btn.disabled = true;
+        errorMsg.style.display = 'none';
+
+        const { error } = await db.auth.signInWithPassword({
+            email: email,
+            password: password,
+        });
+
+        if (error) {
+            errorMsg.style.display = 'block';
+            btn.innerText = "Entrar Seguramente";
+            btn.disabled = false;
+        }
+    }
+
+    async function handleLogout() {
+        if(confirm("Deseja realmente sair da sua conta?")) {
+            await db.auth.signOut();
+        }
+    }
+
+    function showLoginScreen() {
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('main-app').style.display = 'none';
+        document.getElementById('login-email').value = '';
+        document.getElementById('login-password').value = '';
+        document.getElementById('btn-submit-login').innerText = "Entrar Seguramente";
+        document.getElementById('btn-submit-login').disabled = false;
+    }
+
+    function showMainApp() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+    }
+
+
+    // 3. COMUNICAÇÃO COM O BANCO (CRUD)
     async function fetchData() {
         const { data, error } = await db
             .from('alunos')
@@ -350,18 +482,17 @@
 
         if (error) {
             console.error('Erro ao buscar dados:', error);
-            alert('Erro ao conectar com o banco de dados.');
+            // Se der erro de permissão (RLS), o usuário tenta ler algo que não pode
             return;
         }
 
-        // --- LÓGICA DE VIRADA DE MÊS AUTOMÁTICA ---
+        // --- LÓGICA DE VIRADA DE MÊS ---
         const now = new Date();
         const currentMonth = now.getMonth() + 1;
         const currentYear = now.getFullYear();
         let needsReset = false;
 
         for (let student of data) {
-            // Se o aluno está pago, mas a data do pagamento é de um mês/ano anterior...
             if (student.status !== 'inativo' && student.paid && student.data_ultimo_pagamento) {
                 const [ano, mes, dia] = student.data_ultimo_pagamento.split('-');
                 if (parseInt(mes) !== currentMonth || parseInt(ano) !== currentYear) {
@@ -372,14 +503,10 @@
         }
 
         if (needsReset) {
-            console.log("Virada de mês detectada! Zerando pagamentos...");
-            // Desmarca a caixinha de pagamento de todos os alunos ativos
             const { error: resetError } = await db.from('alunos').update({ paid: false }).eq('status', 'ativo').eq('paid', true);
-            if (!resetError) {
-                return fetchData(); // Recarrega os dados com as caixinhas vazias
-            }
+            if (!resetError) return fetchData(); 
         }
-        // ------------------------------------------
+        // --------------------------------
 
         classState.active = data.filter(s => s.status !== 'inativo');
         classState.inactive = data.filter(s => s.status === 'inativo');
@@ -402,24 +529,15 @@
 
         for (let day of selectedDays) {
             const count = classState.active.filter(s => s.days && s.days.includes(day)).length;
-            if (count >= MAX_DESKS) {
-                return alert(`A sala de ${dayNames[day]} já está lotada!`);
-            }
+            if (count >= MAX_DESKS) return alert(`A sala de ${dayNames[day]} já está lotada!`);
         }
 
         const newStudent = {
-            nome: name,
-            parent: parent,
-            whatsapp: whatsapp,
-            fee: fee,
-            paid: false,
-            days: selectedDays,
-            status: 'ativo',
-            historico_pagamentos: []
+            nome: name, parent: parent, whatsapp: whatsapp, fee: fee, paid: false,
+            days: selectedDays, status: 'ativo', historico_pagamentos: []
         };
 
         const { error } = await db.from('alunos').insert([newStudent]);
-
         if (error) return alert('Erro ao salvar o aluno.');
 
         document.getElementById('student-name').value = '';
@@ -427,7 +545,6 @@
         document.getElementById('student-whatsapp').value = '';
         document.getElementById('student-fee').value = '';
         document.querySelectorAll('.day-cb').forEach(cb => cb.checked = false);
-        
         fetchData();
     }
 
@@ -437,7 +554,6 @@
 
         if(confirm(`Remover ${student.nome} da aula de ${dayNames[day]}?`)) {
             const updatedDays = student.days.filter(d => d !== day);
-            
             if (updatedDays.length === 0) {
                 alert("Atenção: O aluno ficará sem dias na semana. Para excluí-lo totalmente, vá no Controle Financeiro e clique na lixeira.");
             } else {
@@ -450,64 +566,38 @@
     function handlePaymentClick(event, studentId, isCurrentlyPaid) {
         event.preventDefault(); 
         if (isCurrentlyPaid) {
-            // Se clicar para DESMARCAR (corrigir um erro ou pagamento devolvido)
             if (confirm("Deseja desmarcar o pagamento deste aluno para o mês atual?")) {
-                updatePaymentStatus(studentId, false);
+                db.from('alunos').update({ paid: false, data_ultimo_pagamento: null }).eq('id', studentId).then(() => fetchData());
             }
         } else {
-            // Se clicar para MARCAR (recebeu o dinheiro)
             const student = classState.active.find(s => s.id === studentId);
             document.getElementById('payment-id').value = student.id;
             document.getElementById('payment-student-name').innerText = `Aluno: ${student.nome}`;
-            
-            // Sugere a data de hoje por padrão
-            const hoje = new Date().toISOString().split('T')[0];
-            document.getElementById('payment-date').value = hoje;
-            
+            document.getElementById('payment-date').value = new Date().toISOString().split('T')[0];
             document.getElementById('payment-modal').classList.add('active');
         }
         return false;
     }
 
-    async function updatePaymentStatus(studentId, isPaid) {
-        // Remove a data de pagamento se for desmarcado para não confundir o reset mensal
-        const updateData = isPaid ? { paid: true } : { paid: false, data_ultimo_pagamento: null };
-        const { error } = await db.from('alunos').update(updateData).eq('id', studentId);
-        if (!error) fetchData();
-    }
-
     async function savePayment() {
         const id = parseInt(document.getElementById('payment-id').value);
         const dateStr = document.getElementById('payment-date').value;
-        
         if (!dateStr) return alert("Por favor, selecione uma data.");
 
         const student = classState.active.find(s => s.id === id);
         if (!student) return;
 
         let historico = student.historico_pagamentos || [];
-        
-        // Define se foi pontual (até dia 10) ou atrasado
         const diaPagamento = parseInt(dateStr.split('-')[2]);
         const statusPagamento = diaPagamento <= 10 ? 'Pontual' : 'Atrasado';
 
-        historico.push({
-            data: dateStr,
-            valor: student.fee,
-            status: statusPagamento
-        });
+        historico.push({ data: dateStr, valor: student.fee, status: statusPagamento });
 
-        const { error } = await db
-            .from('alunos')
-            .update({ 
-                paid: true, 
-                data_ultimo_pagamento: dateStr,
-                historico_pagamentos: historico 
-            })
-            .eq('id', id);
+        const { error } = await db.from('alunos').update({ 
+            paid: true, data_ultimo_pagamento: dateStr, historico_pagamentos: historico 
+        }).eq('id', id);
 
         if (error) return alert("Erro ao salvar o pagamento.");
-
         closeModal('payment-modal');
         fetchData();
     }
@@ -521,27 +611,22 @@
         tbody.innerHTML = '';
 
         const historico = student.historico_pagamentos || [];
-        
         if (historico.length === 0) {
             tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum pagamento registrado ainda.</td></tr>';
         } else {
             const historicoOrdenado = [...historico].sort((a, b) => new Date(b.data) - new Date(a.data));
-            
             historicoOrdenado.forEach(pag => {
                 const tr = document.createElement('tr');
                 const [ano, mes, dia] = pag.data.split('-');
-                const dataFormatada = `${dia}/${mes}/${ano}`;
                 const statusColor = pag.status === 'Pontual' ? 'var(--success)' : 'var(--danger)';
-
                 tr.innerHTML = `
-                    <td><strong>${dataFormatada}</strong></td>
+                    <td><strong>${dia}/${mes}/${ano}</strong></td>
                     <td>${formatCurrency(pag.valor)}</td>
                     <td style="color: ${statusColor}; font-weight: bold; text-transform: uppercase; font-size: 0.85rem;">${pag.status}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
-
         document.getElementById('view-history-modal').classList.add('active');
     }
 
@@ -590,7 +675,7 @@
         if (!error) { closeModal('edit-modal'); fetchData(); }
     }
 
-    // 3. FUNÇÕES DE INTERFACE
+    // 4. FUNÇÕES DE INTERFACE GERAIS
     function switchTab(tabName) {
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -601,7 +686,7 @@
     function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
     function formatCurrency(value) { return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
-    // 4. RENDERIZAÇÃO
+    // 5. RENDERIZAÇÃO
     function renderDaysAndSummary() {
         const days = ['terca', 'quarta', 'quinta'];
         let totalOccupiedSlots = 0;
@@ -708,7 +793,6 @@
 
         classState.inactive.forEach(student => {
             const row = document.createElement('tr');
-            
             let whatsappHTML = '<span style="color:var(--text-light)">Sem número</span>';
             if (student.whatsapp) {
                 whatsappHTML = `<a class="whatsapp-link" href="https://wa.me/55${student.whatsapp}" target="_blank">💬 ${student.whatsapp}</a>`;
@@ -739,8 +823,8 @@
         }
     }
 
-    // 5. START
-    fetchData();
+    // 6. INICIA A VERIFICAÇÃO DE LOGIN AO ABRIR O SITE
+    checkSession();
 
 </script>
 </body>
