@@ -225,239 +225,287 @@
         </div>
     </div>
 
-    <script>
-        const MAX_DESKS = 6;
-        const TOTAL_CAPACITY = MAX_DESKS * 3; // 18 vagas na semana
-        const dayNames = { 'terca': 'Terça', 'quarta': 'Quarta', 'quinta': 'Quinta' };
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        let classState = JSON.parse(localStorage.getItem('classStateSecureV5')) || {
-            students: []
+<script>
+    // 1. INICIALIZAÇÃO DO BANCO DE DADOS
+    // Cole aqui suas credenciais do Supabase
+    const SUPABASE_URL = sb_publishable_U0u5ER_nLpNjkDbyEJsMGg_he47l9IV;
+    const SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4d2loanN3Y2xhYXFnd29kcWtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3Mzk1OTAsImV4cCI6MjA5ODMxNTU5MH0.WRhyrTuBuVsqqf_CneVjfDq6LROCd17Xsc80FdeEfaw;
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const MAX_DESKS = 6;
+    const TOTAL_CAPACITY = MAX_DESKS * 3;
+    const dayNames = { 'terca': 'Terça', 'quarta': 'Quarta', 'quinta': 'Quinta' };
+
+    // Estado local da aplicação (agora é apenas um espelho do banco de dados)
+    let classState = { students: [] };
+
+    // 2. FUNÇÕES DE COMUNICAÇÃO COM O BANCO (CRUD)
+
+    // SELECT: Busca os dados no Supabase e atualiza a tela
+    async function fetchData() {
+        const { data, error } = await supabase
+            .from('alunos')
+            .select('*')
+            .order('nome', { ascending: true }); // Ordena alfabeticamente
+
+        if (error) {
+            console.error('Erro ao buscar dados:', error);
+            alert('Erro ao conectar com o banco de dados.');
+            return;
+        }
+
+        classState.students = data;
+        renderDaysAndSummary();
+        renderFinance();
+    }
+
+    // INSERT: Adiciona um novo aluno
+    async function addStudent() {
+        const name = document.getElementById('student-name').value.trim();
+        const parent = document.getElementById('student-parent').value.trim() || 'Não Informado';
+        const whatsapp = document.getElementById('student-whatsapp').value.replace(/\D/g, ''); 
+        const fee = parseFloat(document.getElementById('student-fee').value);
+        const selectedDays = Array.from(document.querySelectorAll('.day-cb:checked')).map(cb => cb.value);
+
+        if (!name) return alert('Insira o nome do aluno.');
+        if (isNaN(fee) || fee < 0) return alert('Insira um valor válido para a mensalidade.');
+        if (selectedDays.length === 0) return alert('Selecione pelo menos um dia da semana.');
+
+        for (let day of selectedDays) {
+            const count = classState.students.filter(s => s.days.includes(day)).length;
+            if (count >= MAX_DESKS) {
+                return alert(`A sala de ${dayNames[day]} já está lotada!`);
+            }
+        }
+
+        // Prepara o payload para o banco
+        const newStudent = {
+            nome: name,
+            parent: parent,
+            whatsapp: whatsapp,
+            fee: fee,
+            paid: false,
+            days: selectedDays
         };
 
-        function updateUI() {
-            localStorage.setItem('classStateSecureV5', JSON.stringify(classState));
-            renderDaysAndSummary();
-            renderFinance();
+        // Grava no Supabase
+        const { error } = await supabase.from('alunos').insert([newStudent]);
+
+        if (error) {
+            console.error('Erro ao inserir:', error);
+            return alert('Erro ao salvar o aluno no banco de dados.');
         }
 
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        // Limpa formulário e recarrega os dados da nuvem
+        document.getElementById('student-name').value = '';
+        document.getElementById('student-parent').value = '';
+        document.getElementById('student-whatsapp').value = '';
+        document.getElementById('student-fee').value = '';
+        document.querySelectorAll('.day-cb').forEach(cb => cb.checked = false);
+        
+        fetchData();
+    }
 
-            if (tabName === 'sala') {
-                document.querySelector('[onclick="switchTab(\'sala\')"]').classList.add('active');
-                document.getElementById('tab-sala').classList.add('active');
-            } else {
-                document.querySelector('[onclick="switchTab(\'financeiro\')"]').classList.add('active');
-                document.getElementById('tab-financeiro').classList.add('active');
-            }
-        }
+    // UPDATE (Remover Dia): Atualiza o array de dias do aluno
+    async function removeFromDay(studentId, day) {
+        const student = classState.students.find(s => s.id === studentId);
+        if (!student) return;
 
-        function addStudent() {
-            const name = document.getElementById('student-name').value.trim();
-            const parent = document.getElementById('student-parent').value.trim() || 'Não Informado';
-            const whatsapp = document.getElementById('student-whatsapp').value.replace(/\D/g, ''); 
-            const fee = parseFloat(document.getElementById('student-fee').value);
-            const selectedDays = Array.from(document.querySelectorAll('.day-cb:checked')).map(cb => cb.value);
-
-            if (!name) return alert('Insira o nome do aluno.');
-            if (isNaN(fee) || fee < 0) return alert('Insira um valor válido para a mensalidade.');
-            if (selectedDays.length === 0) return alert('Selecione pelo menos um dia da semana para matricular o aluno.');
-
-            for (let day of selectedDays) {
-                const count = classState.students.filter(s => s.days.includes(day)).length;
-                if (count >= MAX_DESKS) {
-                    return alert(`Não é possível matricular. A sala de ${dayNames[day]} já está lotada!`);
-                }
-            }
-
-            classState.students.push({ 
-                id: Date.now(), 
-                name: name, 
-                parent: parent, 
-                whatsapp: whatsapp, 
-                fee: fee, 
-                paid: false,
-                days: selectedDays
-            });
-
-            document.getElementById('student-name').value = '';
-            document.getElementById('student-parent').value = '';
-            document.getElementById('student-whatsapp').value = '';
-            document.getElementById('student-fee').value = '';
-            document.querySelectorAll('.day-cb').forEach(cb => cb.checked = false);
+        if(confirm(`Remover ${student.nome} da aula de ${dayNames[day]}?`)) {
+            const updatedDays = student.days.filter(d => d !== day);
             
-            updateUI();
-        }
-
-        function removeFromDay(studentId, day) {
-            const student = classState.students.find(s => s.id === studentId);
-            if (!student) return;
-
-            if(confirm(`Remover ${student.name} da aula de ${dayNames[day]}?`)) {
-                student.days = student.days.filter(d => d !== day);
-                if (student.days.length === 0) {
-                    classState.students = classState.students.filter(s => s.id !== studentId);
-                }
-                updateUI();
+            if (updatedDays.length === 0) {
+                // Se ficar sem dias, deleta o registro
+                await deleteStudent(studentId, true); 
+            } else {
+                // Senão, dá um update apenas na coluna days
+                const { error } = await supabase
+                    .from('alunos')
+                    .update({ days: updatedDays })
+                    .eq('id', studentId);
+                    
+                if (!error) fetchData();
             }
         }
+    }
 
-        function deleteStudent(studentId) {
-            if(confirm("ATENÇÃO: Deseja excluir este aluno e remover seu registro financeiro?")) {
-                classState.students = classState.students.filter(s => s.id !== studentId);
-                updateUI();
+    // DELETE: Exclui o aluno do banco
+    async function deleteStudent(studentId, bypassConfirm = false) {
+        if(bypassConfirm || confirm("ATENÇÃO: Deseja excluir este aluno e remover seu registro financeiro?")) {
+            const { error } = await supabase
+                .from('alunos')
+                .delete()
+                .eq('id', studentId);
+
+            if (error) {
+                console.error('Erro ao excluir:', error);
+                return alert('Erro ao excluir registro.');
             }
+            fetchData();
+        }
+    }
+
+    // UPDATE: Alterna o status de pagamento
+    async function togglePayment(studentId) {
+        const student = classState.students.find(s => s.id === studentId);
+        if (student) {
+            const newStatus = !student.paid;
+            const { error } = await supabase
+                .from('alunos')
+                .update({ paid: newStatus })
+                .eq('id', studentId);
+
+            if (!error) fetchData();
+        }
+    }
+
+    // UPDATE: Salva os dados do Modal de Edição
+    async function saveEdit() {
+        const id = parseInt(document.getElementById('edit-id').value);
+        const parent = document.getElementById('edit-parent').value.trim() || 'Não Informado';
+        const whatsapp = document.getElementById('edit-whatsapp').value.replace(/\D/g, '');
+        const fee = parseFloat(document.getElementById('edit-fee').value);
+
+        if (isNaN(fee) || fee < 0) return alert('Insira um valor financeiro válido.');
+
+        const { error } = await supabase
+            .from('alunos')
+            .update({ parent: parent, whatsapp: whatsapp, fee: fee })
+            .eq('id', id);
+            
+        if (error) {
+            console.error('Erro ao editar:', error);
+            return alert('Erro ao atualizar os dados.');
         }
 
-        function togglePayment(studentId) {
-            const student = classState.students.find(s => s.id === studentId);
-            if (student) {
-                student.paid = !student.paid;
-                updateUI();
-            }
+        closeModal();
+        fetchData();
+    }
+
+    // 3. FUNÇÕES DE INTERFACE (Abertura de Abas e Modais)
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        if (tabName === 'sala') {
+            document.querySelector('[onclick="switchTab(\'sala\')"]').classList.add('active');
+            document.getElementById('tab-sala').classList.add('active');
+        } else {
+            document.querySelector('[onclick="switchTab(\'financeiro\')"]').classList.add('active');
+            document.getElementById('tab-financeiro').classList.add('active');
         }
+    }
 
-        function openEditModal(studentId) {
-            const student = classState.students.find(s => s.id === studentId);
-            if (!student) return;
+    function openEditModal(studentId) {
+        const student = classState.students.find(s => s.id === studentId);
+        if (!student) return;
+        document.getElementById('edit-id').value = student.id;
+        document.getElementById('edit-parent').value = student.parent === 'Não Informado' ? '' : student.parent;
+        document.getElementById('edit-whatsapp').value = student.whatsapp;
+        document.getElementById('edit-fee').value = student.fee;
+        document.getElementById('edit-modal').classList.add('active');
+    }
 
-            document.getElementById('edit-id').value = student.id;
-            document.getElementById('edit-parent').value = student.parent === 'Não Informado' ? '' : student.parent;
-            document.getElementById('edit-whatsapp').value = student.whatsapp;
-            document.getElementById('edit-fee').value = student.fee;
+    function closeModal() { document.getElementById('edit-modal').classList.remove('active'); }
+    function formatCurrency(value) { return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
-            document.getElementById('edit-modal').classList.add('active');
-        }
+    // 4. FUNÇÕES DE RENDERIZAÇÃO (Mantidas iguais, apenas atualizando propriedades)
+    function renderDaysAndSummary() {
+        const days = ['terca', 'quarta', 'quinta'];
+        let totalOccupiedSlots = 0;
 
-        function closeModal() {
-            document.getElementById('edit-modal').classList.remove('active');
-        }
+        days.forEach(day => {
+            const container = document.getElementById(`card-${day}`);
+            const studentsInDay = classState.students.filter(s => s.days.includes(day));
+            totalOccupiedSlots += studentsInDay.length;
+            const availableSeats = MAX_DESKS - studentsInDay.length;
 
-        function saveEdit() {
-            const id = parseInt(document.getElementById('edit-id').value);
-            const parent = document.getElementById('edit-parent').value.trim() || 'Não Informado';
-            const whatsapp = document.getElementById('edit-whatsapp').value.replace(/\D/g, '');
-            const fee = parseFloat(document.getElementById('edit-fee').value);
+            let html = `
+                <div class="day-header">
+                    <h2>${dayNames[day]}</h2>
+                    <div class="day-stats">Livre: ${availableSeats} | Ocupado: ${studentsInDay.length}</div>
+                </div>
+                <div class="desks-grid">
+            `;
 
-            if (isNaN(fee) || fee < 0) return alert('Insira um valor financeiro válido.');
-
-            const studentIndex = classState.students.findIndex(s => s.id === id);
-            if (studentIndex > -1) {
-                classState.students[studentIndex].parent = parent;
-                classState.students[studentIndex].whatsapp = whatsapp;
-                classState.students[studentIndex].fee = fee;
-                
-                closeModal();
-                updateUI();
-            }
-        }
-
-        function formatCurrency(value) {
-            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        }
-
-        // Função responsável por renderizar a primeira aba (Resumo e Carteiras)
-        function renderDaysAndSummary() {
-            const days = ['terca', 'quarta', 'quinta'];
-            let totalOccupiedSlots = 0;
-
-            days.forEach(day => {
-                const container = document.getElementById(`card-${day}`);
-                const studentsInDay = classState.students.filter(s => s.days.includes(day));
-                
-                // Contabiliza para o resumo geral da semana
-                totalOccupiedSlots += studentsInDay.length;
-                
-                const availableSeats = MAX_DESKS - studentsInDay.length;
-
-                let html = `
-                    <div class="day-header">
-                        <h2>${dayNames[day]}</h2>
-                        <div class="day-stats">Livre: ${availableSeats} | Ocupado: ${studentsInDay.length}</div>
-                    </div>
-                    <div class="desks-grid">
-                `;
-
-                for (let i = 0; i < MAX_DESKS; i++) {
-                    if (i < studentsInDay.length) {
-                        const student = studentsInDay[i];
-                        const badgeClass = student.paid ? 'badge-paid' : 'badge-pending';
-                        
-                        html += `
-                            <div class="desk occupied">
-                                <button class="delete-btn" onclick="removeFromDay(${student.id}, '${day}')" title="Remover da aula">X</button>
-                                <span class="student-name">${student.name}</span>
-                                <span class="payment-badge ${badgeClass}">${student.paid ? 'Pago' : 'Pendente'}</span>
-                            </div>
-                        `;
-                    } else {
-                        html += `<div class="desk empty"><span>🪑 Vaga</span></div>`;
-                    }
-                }
-                html += `</div>`;
-                container.innerHTML = html;
-            });
-
-            // Atualiza os painéis de resumo no topo da primeira aba
-            const totalFreeSlots = TOTAL_CAPACITY - totalOccupiedSlots;
-            const uniqueStudents = classState.students.length;
-
-            document.getElementById('class-unique-students').innerText = uniqueStudents;
-            document.getElementById('class-free-slots').innerText = totalFreeSlots;
-        }
-
-        function renderFinance() {
-            const tableBody = document.getElementById('financial-table-body');
-            tableBody.innerHTML = '';
-
-            let totals = { expected: 0, received: 0, pending: 0 };
-
-            classState.students.forEach(student => {
-                totals.expected += student.fee;
-                student.paid ? (totals.received += student.fee) : (totals.pending += student.fee);
-
-                const row = document.createElement('tr');
-                if (!student.paid) row.classList.add('pending-row');
-
-                let whatsappHTML = '<span style="color:var(--text-light)">Sem número</span>';
-                if (student.whatsapp) {
-                    whatsappHTML = `<a class="whatsapp-link" href="https://wa.me/55${student.whatsapp}" target="_blank">💬 ${student.whatsapp}</a>`;
-                }
-
-                let daysBadges = student.days.map(d => `<span class="day-badge">${dayNames[d]}</span>`).join('');
-
-                row.innerHTML = `
-                    <td><strong>${student.name}</strong></td>
-                    <td><div class="days-badge-container">${daysBadges}</div></td>
-                    <td class="parent-info">
-                        <div>${student.parent}</div>
-                        ${whatsappHTML}
-                    </td>
-                    <td><strong>${formatCurrency(student.fee)}</strong></td>
-                    <td>
-                        <input type="checkbox" style="width:18px; height:18px; cursor:pointer;" ${student.paid ? 'checked' : ''} onchange="togglePayment(${student.id})">
-                    </td>
-                    <td>
-                        <div class="action-btns">
-                            <button class="btn-edit" onclick="openEditModal(${student.id})">✎ Editar</button>
-                            <button class="btn-delete" onclick="deleteStudent(${student.id})">🗑️</button>
+            for (let i = 0; i < MAX_DESKS; i++) {
+                if (i < studentsInDay.length) {
+                    const student = studentsInDay[i];
+                    const badgeClass = student.paid ? 'badge-paid' : 'badge-pending';
+                    html += `
+                        <div class="desk occupied">
+                            <button class="delete-btn" onclick="removeFromDay(${student.id}, '${day}')">X</button>
+                            <span class="student-name">${student.nome}</span>
+                            <span class="payment-badge ${badgeClass}">${student.paid ? 'Pago' : 'Pendente'}</span>
                         </div>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-
-            if (classState.students.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Nenhum aluno matriculado na escola.</td></tr>`;
+                    `;
+                } else {
+                    html += `<div class="desk empty"><span>🪑 Vaga</span></div>`;
+                }
             }
+            html += `</div>`;
+            container.innerHTML = html;
+        });
 
-            document.getElementById('fin-total').innerText = formatCurrency(totals.expected);
-            document.getElementById('fin-received').innerText = formatCurrency(totals.received);
-            document.getElementById('fin-pending').innerText = formatCurrency(totals.pending);
+        document.getElementById('class-unique-students').innerText = classState.students.length;
+        document.getElementById('class-free-slots').innerText = TOTAL_CAPACITY - totalOccupiedSlots;
+    }
+
+    function renderFinance() {
+        const tableBody = document.getElementById('financial-table-body');
+        tableBody.innerHTML = '';
+        let totals = { expected: 0, received: 0, pending: 0 };
+
+        classState.students.forEach(student => {
+            const feeValue = Number(student.fee);
+            totals.expected += feeValue;
+            student.paid ? (totals.received += feeValue) : (totals.pending += feeValue);
+
+            const row = document.createElement('tr');
+            if (!student.paid) row.classList.add('pending-row');
+
+            let whatsappHTML = '<span style="color:var(--text-light)">Sem número</span>';
+            if (student.whatsapp) {
+                whatsappHTML = `<a class="whatsapp-link" href="https://wa.me/55${student.whatsapp}" target="_blank">💬 ${student.whatsapp}</a>`;
+            }
+            let daysBadges = student.days.map(d => `<span class="day-badge">${dayNames[d]}</span>`).join('');
+
+            row.innerHTML = `
+                <td><strong>${student.nome}</strong></td>
+                <td><div class="days-badge-container">${daysBadges}</div></td>
+                <td class="parent-info">
+                    <div>${student.parent}</div>
+                    ${whatsappHTML}
+                </td>
+                <td><strong>${formatCurrency(feeValue)}</strong></td>
+                <td>
+                    <input type="checkbox" style="width:18px; height:18px; cursor:pointer;" ${student.paid ? 'checked' : ''} onchange="togglePayment(${student.id})">
+                </td>
+                <td>
+                    <div class="action-btns">
+                        <button class="btn-edit" onclick="openEditModal(${student.id})">✎</button>
+                        <button class="btn-delete" onclick="deleteStudent(${student.id})">🗑️</button>
+                    </div>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        if (classState.students.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Nenhum aluno matriculado na escola.</td></tr>`;
         }
 
-        updateUI();
-    </script>
+        document.getElementById('fin-total').innerText = formatCurrency(totals.expected);
+        document.getElementById('fin-received').innerText = formatCurrency(totals.received);
+        document.getElementById('fin-pending').innerText = formatCurrency(totals.pending);
+    }
+
+    // 5. INICIALIZAÇÃO DA APLICAÇÃO
+    // Busca os dados do banco assim que a página carrega
+    fetchData();
+
+</script>
 </body>
 </html>
