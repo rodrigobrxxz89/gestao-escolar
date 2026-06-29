@@ -23,6 +23,7 @@
             --info: #9B59B6;
             --whatsapp: #25D366;
             --edit: #3498DB;
+            --restore: #8E44AD;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -54,7 +55,7 @@
         .btn-add { background-color: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: background 0.3s; min-width: 150px; height: 100%; flex: 1; }
         .btn-add:hover { background-color: #357ABD; }
 
-        /* Dashboards (Sala e Financeiro) */
+        /* Dashboards */
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .dash-card { background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); }
         .dash-card.total { border-left-color: var(--secondary); }
@@ -80,10 +81,10 @@
         .badge-pending { background-color: #F9E79F; color: #7D6608; }
         .desk .delete-btn { position: absolute; top: -5px; right: -5px; background-color: var(--danger); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 2; }
 
-        /* Tabela Financeira */
+        /* Tabelas */
         .table-container { background: var(--card-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .table-container h2 { margin-bottom: 15px; color: var(--secondary); font-size: 1.2rem; }
-        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 800px; }
+        .table-container h2 { margin-bottom: 5px; color: var(--secondary); font-size: 1.2rem; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 800px; margin-top: 15px; }
         th, td { padding: 12px 10px; border-bottom: 1px solid #E0E0E0; font-size: 0.95rem; }
         th { background-color: #F8F9FA; color: var(--secondary); font-weight: bold; white-space: nowrap; }
         tr.pending-row { background-color: #FEF9E7; }
@@ -94,13 +95,14 @@
         .action-btns { display: flex; gap: 8px; }
         .btn-edit { background: var(--edit); color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
         .btn-delete { background: var(--danger); color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+        .btn-restore { background: var(--restore); color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
 
-        /* Modal de Edição */
+        /* Modais */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: var(--card-bg); padding: 25px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        .modal-content h2 { margin-bottom: 15px; color: var(--secondary); }
-        .modal-form { display: flex; flex-direction: column; gap: 15px; }
+        .modal-content h2 { margin-bottom: 5px; color: var(--secondary); }
+        .modal-form { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
         .modal-form label { font-size: 0.9rem; font-weight: bold; color: var(--text-light); }
         .modal-form input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
         .modal-actions { display: flex; gap: 10px; margin-top: 10px; }
@@ -126,6 +128,7 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('sala')">Visualização da Sala</button>
             <button class="tab-btn" onclick="switchTab('financeiro')">Controle Financeiro</button>
+            <button class="tab-btn" onclick="switchTab('historico')">Histórico de Ex-Alunos</button>
         </div>
 
         <div class="controls">
@@ -184,7 +187,7 @@
             </div>
 
             <div class="table-container">
-                <h2>Alunos Matriculados e Pagamentos</h2>
+                <h2>Alunos Ativos e Pagamentos</h2>
                 <table>
                     <thead>
                         <tr>
@@ -196,8 +199,27 @@
                             <th>Ações</th>
                         </tr>
                     </thead>
-                    <tbody id="financial-table-body">
-                        </tbody>
+                    <tbody id="financial-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-historico" class="tab-content">
+            <div class="table-container">
+                <h2>Histórico de Ex-Alunos</h2>
+                <p style="color: var(--text-light); font-size: 0.9rem;">Consulta de alunos que saíram da escola e avaliação de comportamento financeiro.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aluno</th>
+                            <th>Responsável / Contato</th>
+                            <th>Mensalidade Base</th>
+                            <th>Situação na Saída</th>
+                            <th>Motivo da Exclusão</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body"></tbody>
                 </table>
             </div>
         </div>
@@ -221,8 +243,26 @@
                     <input type="number" id="edit-fee" step="0.01">
                 </div>
                 <div class="modal-actions">
-                    <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+                    <button class="btn-cancel" onclick="closeModal('edit-modal')">Cancelar</button>
                     <button class="btn-save" onclick="saveEdit()">Salvar Alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Excluir Aluno</h2>
+            <p id="delete-student-name" style="color: var(--text-light); font-weight: bold;"></p>
+            <div class="modal-form">
+                <input type="hidden" id="delete-id">
+                <div>
+                    <label>Qual o motivo da exclusão?</label>
+                    <input type="text" id="delete-reason" placeholder="Ex: Mudou de cidade, Inadimplência, Desistiu...">
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="closeModal('delete-modal')">Cancelar</button>
+                    <button class="btn-delete" style="flex: 1;" onclick="confirmDelete()">Confirmar Exclusão</button>
                 </div>
             </div>
         </div>
@@ -235,16 +275,16 @@
     const SUPABASE_URL = 'https://hxwihjswclaaqgwodqkg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4d2loanN3Y2xhYXFnd29kcWtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3Mzk1OTAsImV4cCI6MjA5ODMxNTU5MH0.WRhyrTuBuVsqqf_CneVjfDq6LROCd17Xsc80FdeEfaw';
 
-    // CORREÇÃO: Nome alterado para "db" para não conflitar com a biblioteca do Supabase
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const MAX_DESKS = 6;
     const TOTAL_CAPACITY = MAX_DESKS * 3;
     const dayNames = { 'terca': 'Terça', 'quarta': 'Quarta', 'quinta': 'Quinta' };
 
-    let classState = { students: [] };
+    // Estado da aplicação agora separa quem está ativo de quem está inativo (histórico)
+    let classState = { active: [], inactive: [] };
 
-    // 2. FUNÇÕES DE COMUNICAÇÃO COM O BANCO (CRUD)
+    // 2. FUNÇÕES DE COMUNICAÇÃO (CRUD)
 
     async function fetchData() {
         const { data, error } = await db
@@ -258,9 +298,13 @@
             return;
         }
 
-        classState.students = data;
+        // Separa os alunos baseados no novo status. Quem for null/vazio é ativo por padrão antigo.
+        classState.active = data.filter(s => s.status !== 'inativo');
+        classState.inactive = data.filter(s => s.status === 'inativo');
+
         renderDaysAndSummary();
         renderFinance();
+        renderHistory();
     }
 
     async function addStudent() {
@@ -275,7 +319,7 @@
         if (selectedDays.length === 0) return alert('Selecione pelo menos um dia da semana.');
 
         for (let day of selectedDays) {
-            const count = classState.students.filter(s => s.days.includes(day)).length;
+            const count = classState.active.filter(s => s.days && s.days.includes(day)).length;
             if (count >= MAX_DESKS) {
                 return alert(`A sala de ${dayNames[day]} já está lotada!`);
             }
@@ -287,14 +331,15 @@
             whatsapp: whatsapp,
             fee: fee,
             paid: false,
-            days: selectedDays
+            days: selectedDays,
+            status: 'ativo' // Garante o status correto
         };
 
         const { error } = await db.from('alunos').insert([newStudent]);
 
         if (error) {
             console.error('Erro ao inserir:', error);
-            return alert('Erro ao salvar o aluno no banco de dados.');
+            return alert('Erro ao salvar o aluno.');
         }
 
         document.getElementById('student-name').value = '';
@@ -307,14 +352,16 @@
     }
 
     async function removeFromDay(studentId, day) {
-        const student = classState.students.find(s => s.id === studentId);
+        const student = classState.active.find(s => s.id === studentId);
         if (!student) return;
 
         if(confirm(`Remover ${student.nome} da aula de ${dayNames[day]}?`)) {
             const updatedDays = student.days.filter(d => d !== day);
             
             if (updatedDays.length === 0) {
-                await deleteStudent(studentId, true); 
+                // Ao invés de deletar sozinho, força a professora a usar o Controle Financeiro
+                // para que ela possa preencher o motivo da saída adequadamente.
+                alert("Atenção: O aluno ficará sem dias na semana. Para excluí-lo totalmente do sistema, vá na aba Controle Financeiro e use o botão de Lixeira para informar o motivo da saída.");
             } else {
                 const { error } = await db
                     .from('alunos')
@@ -326,23 +373,50 @@
         }
     }
 
-    async function deleteStudent(studentId, bypassConfirm = false) {
-        if(bypassConfirm || confirm("ATENÇÃO: Deseja excluir este aluno e remover seu registro financeiro?")) {
+    // Abre o modal de exclusão perguntando o motivo
+    function openDeleteModal(studentId) {
+        const student = classState.active.find(s => s.id === studentId);
+        if (!student) return;
+
+        document.getElementById('delete-id').value = student.id;
+        document.getElementById('delete-student-name').innerText = `Aluno: ${student.nome}`;
+        document.getElementById('delete-reason').value = '';
+        document.getElementById('delete-modal').classList.add('active');
+    }
+
+    // Executa a "exclusão suave" (Soft Delete) mandando pro histórico
+    async function confirmDelete() {
+        const id = parseInt(document.getElementById('delete-id').value);
+        const reason = document.getElementById('delete-reason').value.trim() || 'Motivo não informado';
+
+        const { error } = await db
+            .from('alunos')
+            .update({ status: 'inativo', motivo_exclusao: reason })
+            .eq('id', id);
+
+        if (error) {
+            console.error('Erro ao excluir:', error);
+            return alert('Erro ao processar exclusão.');
+        }
+
+        closeModal('delete-modal');
+        fetchData();
+    }
+
+    // Recupera o aluno do histórico de volta para o Controle Financeiro
+    async function restoreStudent(studentId) {
+        if(confirm("Deseja restaurar este aluno? Ele voltará para a aba de Controle Financeiro.")) {
             const { error } = await db
                 .from('alunos')
-                .delete()
+                .update({ status: 'ativo', motivo_exclusao: null })
                 .eq('id', studentId);
 
-            if (error) {
-                console.error('Erro ao excluir:', error);
-                return alert('Erro ao excluir registro.');
-            }
-            fetchData();
+            if (!error) fetchData();
         }
     }
 
     async function togglePayment(studentId) {
-        const student = classState.students.find(s => s.id === studentId);
+        const student = classState.active.find(s => s.id === studentId);
         if (student) {
             const newStatus = !student.paid;
             const { error } = await db
@@ -354,43 +428,8 @@
         }
     }
 
-    async function saveEdit() {
-        const id = parseInt(document.getElementById('edit-id').value);
-        const parent = document.getElementById('edit-parent').value.trim() || 'Não Informado';
-        const whatsapp = document.getElementById('edit-whatsapp').value.replace(/\D/g, '');
-        const fee = parseFloat(document.getElementById('edit-fee').value);
-
-        if (isNaN(fee) || fee < 0) return alert('Insira um valor financeiro válido.');
-
-        const { error } = await db
-            .from('alunos')
-            .update({ parent: parent, whatsapp: whatsapp, fee: fee })
-            .eq('id', id);
-            
-        if (error) {
-            console.error('Erro ao editar:', error);
-            return alert('Erro ao atualizar os dados.');
-        }
-
-        closeModal();
-        fetchData();
-    }
-
-    // 3. FUNÇÕES DE INTERFACE (Abertura de Abas e Modais)
-    function switchTab(tabName) {
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-        if (tabName === 'sala') {
-            document.querySelector('[onclick="switchTab(\'sala\')"]').classList.add('active');
-            document.getElementById('tab-sala').classList.add('active');
-        } else {
-            document.querySelector('[onclick="switchTab(\'financeiro\')"]').classList.add('active');
-            document.getElementById('tab-financeiro').classList.add('active');
-        }
-    }
-
     function openEditModal(studentId) {
-        const student = classState.students.find(s => s.id === studentId);
+        const student = classState.active.find(s => s.id === studentId);
         if (!student) return;
         document.getElementById('edit-id').value = student.id;
         document.getElementById('edit-parent').value = student.parent === 'Não Informado' ? '' : student.parent;
@@ -399,17 +438,50 @@
         document.getElementById('edit-modal').classList.add('active');
     }
 
-    function closeModal() { document.getElementById('edit-modal').classList.remove('active'); }
-    function formatCurrency(value) { return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+    async function saveEdit() {
+        const id = parseInt(document.getElementById('edit-id').value);
+        const parent = document.getElementById('edit-parent').value.trim() || 'Não Informado';
+        const whatsapp = document.getElementById('edit-whatsapp').value.replace(/\D/g, '');
+        const fee = parseFloat(document.getElementById('edit-fee').value);
 
-    // 4. FUNÇÕES DE RENDERIZAÇÃO
+        if (isNaN(fee) || fee < 0) return alert('Insira um valor válido.');
+
+        const { error } = await db
+            .from('alunos')
+            .update({ parent: parent, whatsapp: whatsapp, fee: fee })
+            .eq('id', id);
+            
+        if (!error) {
+            closeModal('edit-modal');
+            fetchData();
+        }
+    }
+
+    // 3. FUNÇÕES DE INTERFACE
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+    }
+
+    function closeModal(modalId) { 
+        document.getElementById(modalId).classList.remove('active'); 
+    }
+    
+    function formatCurrency(value) { 
+        return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); 
+    }
+
+    // 4. RENDERIZAÇÃO
     function renderDaysAndSummary() {
         const days = ['terca', 'quarta', 'quinta'];
         let totalOccupiedSlots = 0;
 
         days.forEach(day => {
             const container = document.getElementById(`card-${day}`);
-            const studentsInDay = classState.students.filter(s => s.days.includes(day));
+            // Pega APENAS os alunos ATIVOS para desenhar a sala
+            const studentsInDay = classState.active.filter(s => s.days && s.days.includes(day));
             totalOccupiedSlots += studentsInDay.length;
             const availableSeats = MAX_DESKS - studentsInDay.length;
 
@@ -427,7 +499,7 @@
                     const badgeClass = student.paid ? 'badge-paid' : 'badge-pending';
                     html += `
                         <div class="desk occupied">
-                            <button class="delete-btn" onclick="removeFromDay(${student.id}, '${day}')">X</button>
+                            <button class="delete-btn" onclick="removeFromDay(${student.id}, '${day}')" title="Remover da aula">X</button>
                             <span class="student-name">${student.nome}</span>
                             <span class="payment-badge ${badgeClass}">${student.paid ? 'Pago' : 'Pendente'}</span>
                         </div>
@@ -440,7 +512,7 @@
             container.innerHTML = html;
         });
 
-        document.getElementById('class-unique-students').innerText = classState.students.length;
+        document.getElementById('class-unique-students').innerText = classState.active.length;
         document.getElementById('class-free-slots').innerText = TOTAL_CAPACITY - totalOccupiedSlots;
     }
 
@@ -449,7 +521,8 @@
         tableBody.innerHTML = '';
         let totals = { expected: 0, received: 0, pending: 0 };
 
-        classState.students.forEach(student => {
+        // Exibe apenas ATIVOS no controle de mensalidade
+        classState.active.forEach(student => {
             const feeValue = Number(student.fee);
             totals.expected += feeValue;
             student.paid ? (totals.received += feeValue) : (totals.pending += feeValue);
@@ -461,7 +534,10 @@
             if (student.whatsapp) {
                 whatsappHTML = `<a class="whatsapp-link" href="https://wa.me/55${student.whatsapp}" target="_blank">💬 ${student.whatsapp}</a>`;
             }
-            let daysBadges = student.days.map(d => `<span class="day-badge">${dayNames[d]}</span>`).join('');
+            
+            // Garantia contra dados antigos sem array de dias
+            let daysArray = student.days || [];
+            let daysBadges = daysArray.map(d => `<span class="day-badge">${dayNames[d]}</span>`).join('');
 
             row.innerHTML = `
                 <td><strong>${student.nome}</strong></td>
@@ -476,26 +552,4 @@
                 </td>
                 <td>
                     <div class="action-btns">
-                        <button class="btn-edit" onclick="openEditModal(${student.id})">✎</button>
-                        <button class="btn-delete" onclick="deleteStudent(${student.id})">🗑️</button>
-                    </div>
-                </td>
-            `;
-            tableBody.appendChild(row);
-        });
-
-        if (classState.students.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Nenhum aluno matriculado na escola.</td></tr>`;
-        }
-
-        document.getElementById('fin-total').innerText = formatCurrency(totals.expected);
-        document.getElementById('fin-received').innerText = formatCurrency(totals.received);
-        document.getElementById('fin-pending').innerText = formatCurrency(totals.pending);
-    }
-
-    // 5. INICIALIZAÇÃO DA APLICAÇÃO
-    fetchData();
-
-</script>
-</body>
-</html>
+                        <button class="btn-edit" onclick="openEditModal(${student.id})" title="Editar">✎</button>
