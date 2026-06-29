@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gerenciador Escolar e Financeiro</title>
+    
+    <link rel="icon" href="data:,">
+
     <style>
         :root {
             --primary: #4A90E2;
@@ -229,27 +232,25 @@
 
 <script>
     // 1. INICIALIZAÇÃO DO BANCO DE DADOS
-    // Cole aqui suas credenciais do Supabase
     const SUPABASE_URL = 'https://hxwhihjswclaaqgwodqkg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4d2loanN3Y2xhYXFnd29kcWtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3Mzk1OTAsImV4cCI6MjA5ODMxNTU5MH0.WRhyrTuBuVsqqf_CneVjfDq6LROCd17Xsc80FdeEfaw';
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // CORREÇÃO: Nome alterado para "db" para não conflitar com a biblioteca do Supabase
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const MAX_DESKS = 6;
     const TOTAL_CAPACITY = MAX_DESKS * 3;
     const dayNames = { 'terca': 'Terça', 'quarta': 'Quarta', 'quinta': 'Quinta' };
 
-    // Estado local da aplicação (agora é apenas um espelho do banco de dados)
     let classState = { students: [] };
 
     // 2. FUNÇÕES DE COMUNICAÇÃO COM O BANCO (CRUD)
 
-    // SELECT: Busca os dados no Supabase e atualiza a tela
     async function fetchData() {
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('alunos')
             .select('*')
-            .order('nome', { ascending: true }); // Ordena alfabeticamente
+            .order('nome', { ascending: true }); 
 
         if (error) {
             console.error('Erro ao buscar dados:', error);
@@ -262,7 +263,6 @@
         renderFinance();
     }
 
-    // INSERT: Adiciona um novo aluno
     async function addStudent() {
         const name = document.getElementById('student-name').value.trim();
         const parent = document.getElementById('student-parent').value.trim() || 'Não Informado';
@@ -281,7 +281,6 @@
             }
         }
 
-        // Prepara o payload para o banco
         const newStudent = {
             nome: name,
             parent: parent,
@@ -291,15 +290,13 @@
             days: selectedDays
         };
 
-        // Grava no Supabase
-        const { error } = await supabase.from('alunos').insert([newStudent]);
+        const { error } = await db.from('alunos').insert([newStudent]);
 
         if (error) {
             console.error('Erro ao inserir:', error);
             return alert('Erro ao salvar o aluno no banco de dados.');
         }
 
-        // Limpa formulário e recarrega os dados da nuvem
         document.getElementById('student-name').value = '';
         document.getElementById('student-parent').value = '';
         document.getElementById('student-whatsapp').value = '';
@@ -309,7 +306,6 @@
         fetchData();
     }
 
-    // UPDATE (Remover Dia): Atualiza o array de dias do aluno
     async function removeFromDay(studentId, day) {
         const student = classState.students.find(s => s.id === studentId);
         if (!student) return;
@@ -318,11 +314,9 @@
             const updatedDays = student.days.filter(d => d !== day);
             
             if (updatedDays.length === 0) {
-                // Se ficar sem dias, deleta o registro
                 await deleteStudent(studentId, true); 
             } else {
-                // Senão, dá um update apenas na coluna days
-                const { error } = await supabase
+                const { error } = await db
                     .from('alunos')
                     .update({ days: updatedDays })
                     .eq('id', studentId);
@@ -332,10 +326,9 @@
         }
     }
 
-    // DELETE: Exclui o aluno do banco
     async function deleteStudent(studentId, bypassConfirm = false) {
         if(bypassConfirm || confirm("ATENÇÃO: Deseja excluir este aluno e remover seu registro financeiro?")) {
-            const { error } = await supabase
+            const { error } = await db
                 .from('alunos')
                 .delete()
                 .eq('id', studentId);
@@ -348,12 +341,11 @@
         }
     }
 
-    // UPDATE: Alterna o status de pagamento
     async function togglePayment(studentId) {
         const student = classState.students.find(s => s.id === studentId);
         if (student) {
             const newStatus = !student.paid;
-            const { error } = await supabase
+            const { error } = await db
                 .from('alunos')
                 .update({ paid: newStatus })
                 .eq('id', studentId);
@@ -362,7 +354,6 @@
         }
     }
 
-    // UPDATE: Salva os dados do Modal de Edição
     async function saveEdit() {
         const id = parseInt(document.getElementById('edit-id').value);
         const parent = document.getElementById('edit-parent').value.trim() || 'Não Informado';
@@ -371,7 +362,7 @@
 
         if (isNaN(fee) || fee < 0) return alert('Insira um valor financeiro válido.');
 
-        const { error } = await supabase
+        const { error } = await db
             .from('alunos')
             .update({ parent: parent, whatsapp: whatsapp, fee: fee })
             .eq('id', id);
@@ -411,7 +402,7 @@
     function closeModal() { document.getElementById('edit-modal').classList.remove('active'); }
     function formatCurrency(value) { return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
-    // 4. FUNÇÕES DE RENDERIZAÇÃO (Mantidas iguais, apenas atualizando propriedades)
+    // 4. FUNÇÕES DE RENDERIZAÇÃO
     function renderDaysAndSummary() {
         const days = ['terca', 'quarta', 'quinta'];
         let totalOccupiedSlots = 0;
@@ -503,7 +494,6 @@
     }
 
     // 5. INICIALIZAÇÃO DA APLICAÇÃO
-    // Busca os dados do banco assim que a página carrega
     fetchData();
 
 </script>
