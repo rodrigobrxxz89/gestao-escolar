@@ -29,6 +29,7 @@
             --edit: #29B6F6;
             --restore: #AB47BC;
             --history: #26A69A;
+            --attendance: #00ACC1; /* Azul Ciano para presença */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
@@ -66,7 +67,7 @@
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Formulários (Alunos e Despesas) */
+        /* Formulários */
         .controls { background-color: var(--card-bg); padding: 20px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.04); border: 1px solid #F0F0F0; }
         .inputs-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
         .controls input { padding: 14px 16px; border: 2px solid #E0E0E0; border-radius: 10px; font-size: 1rem; background-color: #FAFAFA; font-weight: 600; transition: border-color 0.3s; color: var(--text-dark); }
@@ -122,11 +123,13 @@
         .whatsapp-link { display: inline-flex; align-items: center; gap: 4px; color: var(--whatsapp); text-decoration: none; font-weight: 800; margin-top: 4px; background: #E8F5E9; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; }
         .days-badge-container { display: flex; gap: 6px; flex-wrap: wrap; }
         .day-badge { background: #E1BEE7; color: #4A148C; font-weight: 700; font-size: 0.75rem; padding: 4px 8px; border-radius: 8px; }
+        
         .action-btns { display: flex; gap: 10px; }
         .btn-edit { background: var(--edit); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(41, 182, 246, 0.3);}
         .btn-delete { background: var(--danger); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(239, 83, 80, 0.3);}
         .btn-restore { background: var(--restore); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(171, 71, 188, 0.3);}
         .btn-history { background: var(--history); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(38, 166, 154, 0.3);}
+        .btn-attendance { background: var(--attendance); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(0, 172, 193, 0.3);}
 
         /* Modais */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(38, 50, 56, 0.6); backdrop-filter: blur(3px); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
@@ -174,13 +177,14 @@
         <header>
             <div class="header-titles">
                 <h1>Gestão Escolar</h1>
-                <p>Sala de Aula & Fluxo de Mensalidades</p>
+                <p>Sala de Aula, Presença & Financeiro</p>
             </div>
             <button class="btn-logout" onclick="handleLogout()">Sair da Conta</button>
         </header>
 
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('sala')">Visualização da Sala</button>
+            <button class="tab-btn" onclick="switchTab('presenca')">Lista de Presença</button>
             <button class="tab-btn" onclick="switchTab('financeiro')">Controle Financeiro</button>
             <button class="tab-btn" onclick="switchTab('historico')">Histórico de Ex-Alunos</button>
         </div>
@@ -226,9 +230,35 @@
             </div>
         </div>
 
+        <!-- NOVA ABA: CONTROLE DE PRESENÇA -->
+        <div id="tab-presenca" class="tab-content">
+            <div class="controls" style="margin-bottom: 25px;">
+                <h2 style="color: var(--primary); margin-bottom: 15px;">Diário de Classe</h2>
+                <div class="inputs-row" style="align-items: center;">
+                    <label style="font-weight: 800; color: var(--text-dark);">Selecione a data da aula:</label>
+                    <input type="date" id="attendance-date" onchange="renderAttendance()" style="max-width: 200px;">
+                    <span style="color: var(--text-light); font-size: 0.9rem; margin-left: 10px;">(Marque quem compareceu neste dia)</span>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <h2>Lista de Chamada</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aluno</th>
+                            <th>Dias Previstos (Semana)</th>
+                            <th>Presença (no dia selecionado)</th>
+                            <th>Histórico Mensal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- ABA CONTROLE FINANCEIRO -->
         <div id="tab-financeiro" class="tab-content">
-            <!-- 5 Cartões de Resumo do Mês -->
             <div class="dashboard-grid">
                 <div class="dash-card total">
                     <h3>A Receber (Mensalidades)</h3>
@@ -252,7 +282,6 @@
                 </div>
             </div>
 
-            <!-- Tabela Alunos Ativos -->
             <div class="table-container">
                 <h2>Alunos Ativos e Pagamentos</h2>
                 <table>
@@ -270,29 +299,22 @@
                 </table>
             </div>
 
-            <!-- NOVA SEÇÃO: Lançar Despesas -->
             <div class="controls" style="margin-top: 30px;">
                 <h2 style="margin-bottom: 15px; color: var(--primary);">Lançar Despesa da Escolinha</h2>
                 <div class="inputs-row">
-                    <input type="text" id="expense-desc" class="w-full-mobile" placeholder="Descrição (ex: Papel, Lanche, Tinta...)">
+                    <input type="text" id="expense-desc" class="w-full-mobile" placeholder="Descrição (ex: Papel, Lanche...)">
                     <input type="number" id="expense-value" class="w-small-mobile" placeholder="Valor Gasto (R$)" min="0" step="0.01">
                     <input type="date" id="expense-date" class="w-small-mobile">
                     <button class="btn-add" style="flex: 1; background-color: var(--danger); box-shadow: 0 4px 10px rgba(239, 83, 80, 0.3);" onclick="addExpense()">Registrar Despesa</button>
                 </div>
             </div>
 
-            <!-- Tabela Histórico de Despesas -->
             <div class="table-container">
                 <h2>Histórico de Despesas</h2>
-                <p style="color: var(--text-light); font-size: 0.9rem;">Todas as despesas lançadas. O dashboard acima soma apenas os gastos do mês atual.</p>
+                <p style="color: var(--text-light); font-size: 0.9rem;">O dashboard acima soma apenas os gastos do mês atual.</p>
                 <table>
                     <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Descrição</th>
-                            <th>Valor</th>
-                            <th>Ação</th>
-                        </tr>
+                        <tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Ação</th></tr>
                     </thead>
                     <tbody id="expenses-table-body"></tbody>
                 </table>
@@ -307,12 +329,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Aluno</th>
-                            <th>Responsável / Contato</th>
-                            <th>Mensalidade Base</th>
-                            <th>Situação na Saída</th>
-                            <th>Motivo da Exclusão</th>
-                            <th>Ações</th>
+                            <th>Aluno</th><th>Responsável / Contato</th><th>Mensalidade Base</th><th>Situação na Saída</th><th>Motivo da Exclusão</th><th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="history-table-body"></tbody>
@@ -379,7 +396,24 @@
                 </table>
             </div>
             <div class="modal-actions" style="margin-top: 20px;">
-                <button class="btn-cancel" style="width: 100%" onclick="closeModal('view-history-modal')">Fechar Relatório</button>
+                <button class="btn-cancel" style="width: 100%" onclick="closeModal('view-history-modal')">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOVO MODAL: RELATÓRIO DE PRESENÇA -->
+    <div id="view-attendance-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2>Diário de Presença</h2>
+            <p id="view-attendance-student-name" style="color: var(--text-light); font-weight: bold; margin-bottom: 15px;"></p>
+            <div class="table-container" style="padding: 0; box-shadow: none; max-height: 300px; overflow-y: auto;">
+                <table style="min-width: 100%; margin-top: 0;">
+                    <thead><tr><th>Datas que o aluno compareceu:</th></tr></thead>
+                    <tbody id="view-attendance-table-body"></tbody>
+                </table>
+            </div>
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button class="btn-cancel" style="width: 100%" onclick="closeModal('view-attendance-modal')">Fechar Relatório</button>
             </div>
         </div>
     </div>
@@ -399,8 +433,10 @@
 
     let classState = { active: [], inactive: [], despesas: [] };
 
-    // Set today's date on expense input by default
-    document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+    // Set today's date on expense and attendance inputs
+    const hojePadrao = new Date().toISOString().split('T')[0];
+    document.getElementById('expense-date').value = hojePadrao;
+    document.getElementById('attendance-date').value = hojePadrao;
 
     // 2. SISTEMA DE LOGIN
     async function checkSession() {
@@ -444,16 +480,11 @@
 
     // 3. COMUNICAÇÃO COM O BANCO
     async function fetchData() {
-        // Busca alunos e despesas ao mesmo tempo
         const { data: alunosData, error: alunosError } = await db.from('alunos').select('*').order('nome', { ascending: true });
         const { data: despesasData, error: despesasError } = await db.from('despesas').select('*').order('data_despesa', { ascending: false });
 
-        if (alunosError) {
-            console.error('Erro ao buscar dados:', alunosError);
-            return;
-        }
+        if (alunosError) return console.error('Erro ao buscar dados:', alunosError);
 
-        // --- LÓGICA DE VIRADA DE MÊS ---
         const now = new Date();
         const currentMonth = now.getMonth() + 1;
         const currentYear = now.getFullYear();
@@ -472,7 +503,6 @@
             const { error: resetError } = await db.from('alunos').update({ paid: false }).eq('status', 'ativo').eq('paid', true);
             if (!resetError) return fetchData(); 
         }
-        // --------------------------------
 
         classState.active = alunosData.filter(s => s.status !== 'inativo');
         classState.inactive = alunosData.filter(s => s.status === 'inativo');
@@ -481,6 +511,7 @@
         renderDaysAndSummary();
         renderFinance();
         renderHistory();
+        renderAttendance(); // Renderiza a nova aba de presença
     }
 
     async function addStudent() {
@@ -491,15 +522,18 @@
         const selectedDays = Array.from(document.querySelectorAll('.day-cb:checked')).map(cb => cb.value);
 
         if (!name) return alert('Insira o nome do aluno.');
-        if (isNaN(fee) || fee < 0) return alert('Insira um valor válido para a mensalidade.');
-        if (selectedDays.length === 0) return alert('Selecione pelo menos um dia da semana.');
+        if (isNaN(fee) || fee < 0) return alert('Insira um valor válido.');
+        if (selectedDays.length === 0) return alert('Selecione pelo menos um dia.');
 
         for (let day of selectedDays) {
             const count = classState.active.filter(s => s.days && s.days.includes(day)).length;
             if (count >= MAX_DESKS) return alert(`A sala de ${dayNames[day]} já está lotada!`);
         }
 
-        const newStudent = { nome: name, parent: parent, whatsapp: whatsapp, fee: fee, paid: false, days: selectedDays, status: 'ativo', historico_pagamentos: [] };
+        const newStudent = { 
+            nome: name, parent: parent, whatsapp: whatsapp, fee: fee, paid: false, 
+            days: selectedDays, status: 'ativo', historico_pagamentos: [], historico_presencas: [] 
+        };
         const { error } = await db.from('alunos').insert([newStudent]);
         
         if (error) return alert('Erro ao salvar o aluno.');
@@ -526,6 +560,62 @@
             }
         }
     }
+
+    // --- NOVA LÓGICA DE PRESENÇA ---
+    async function toggleAttendance(event, studentId) {
+        const selectedDate = document.getElementById('attendance-date').value;
+        if (!selectedDate) {
+            event.preventDefault();
+            return alert("Por favor, selecione uma data válida para a aula.");
+        }
+
+        const student = classState.active.find(s => s.id === studentId);
+        if (!student) return;
+
+        let presencas = student.historico_presencas || [];
+        const isPresent = presencas.includes(selectedDate);
+
+        if (isPresent) {
+            presencas = presencas.filter(d => d !== selectedDate); // Remove se desmarcar
+        } else {
+            presencas.push(selectedDate); // Adiciona se marcar
+        }
+
+        const { error } = await db.from('alunos').update({ historico_presencas: presencas }).eq('id', studentId);
+        if (!error) {
+            // Atualiza localmente para não piscar a tela inteira atoa
+            student.historico_presencas = presencas;
+            renderAttendance();
+        } else {
+            alert("Erro ao salvar presença.");
+            event.preventDefault();
+        }
+    }
+
+    function openAttendanceHistoryModal(studentId) {
+        const student = classState.active.find(s => s.id === studentId);
+        if (!student) return;
+
+        document.getElementById('view-attendance-student-name').innerText = `Aluno: ${student.nome}`;
+        const tbody = document.getElementById('view-attendance-table-body');
+        tbody.innerHTML = '';
+
+        const presencas = student.historico_presencas || [];
+        if (presencas.length === 0) {
+            tbody.innerHTML = '<tr><td style="text-align:center;">Nenhuma presença registrada para este aluno ainda.</td></tr>';
+        } else {
+            // Ordena da mais recente para a mais antiga
+            const presencasOrdenadas = [...presencas].sort((a, b) => new Date(b) - new Date(a));
+            presencasOrdenadas.forEach(dataIso => {
+                const tr = document.createElement('tr');
+                const [ano, mes, dia] = dataIso.split('-');
+                tr.innerHTML = `<td><strong style="color: var(--primary);">&bull; ${dia}/${mes}/${ano}</strong></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+        document.getElementById('view-attendance-modal').classList.add('active');
+    }
+    // -------------------------------
 
     function handlePaymentClick(event, studentId, isCurrentlyPaid) {
         event.preventDefault(); 
@@ -556,7 +646,6 @@
         const statusPagamento = diaPagamento <= 10 ? 'Pontual' : 'Atrasado';
 
         historico.push({ data: dateStr, valor: student.fee, status: statusPagamento });
-
         const { error } = await db.from('alunos').update({ paid: true, data_ultimo_pagamento: dateStr, historico_pagamentos: historico }).eq('id', id);
 
         if (error) return alert("Erro ao salvar o pagamento.");
@@ -636,7 +725,6 @@
         if (!error) { closeModal('edit-modal'); fetchData(); }
     }
 
-    // --- LÓGICA DE DESPESAS ---
     async function addExpense() {
         const desc = document.getElementById('expense-desc').value.trim();
         const val = parseFloat(document.getElementById('expense-value').value);
@@ -669,7 +757,6 @@
         document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
         document.getElementById(`tab-${tabName}`).classList.add('active');
         
-        // Esconde o formulário de matricular aluno se não estiver na aba Sala
         if(tabName === 'sala') {
             document.getElementById('form-alunos').style.display = 'block';
         } else {
@@ -720,6 +807,46 @@
 
         document.getElementById('class-unique-students').innerText = classState.active.length;
         document.getElementById('class-free-slots').innerText = TOTAL_CAPACITY - totalOccupiedSlots;
+    }
+
+    function renderAttendance() {
+        const tableBody = document.getElementById('attendance-table-body');
+        tableBody.innerHTML = '';
+        
+        const selectedDate = document.getElementById('attendance-date').value;
+
+        classState.active.forEach(student => {
+            const tr = document.createElement('tr');
+            
+            let daysArray = student.days || [];
+            let daysBadges = daysArray.map(d => `<span class="day-badge">${dayNames[d]}</span>`).join('');
+            
+            const presencas = student.historico_presencas || [];
+            const isPresent = presencas.includes(selectedDate);
+
+            tr.innerHTML = `
+                <td><strong>${student.nome}</strong></td>
+                <td><div class="days-badge-container">${daysBadges}</div></td>
+                <td>
+                    <div style="display:flex; align-items:center; gap: 8px;">
+                        <input type="checkbox" style="width:20px; height:20px; cursor:pointer;" 
+                            ${isPresent ? 'checked' : ''} 
+                            onclick="toggleAttendance(event, ${student.id})">
+                        <span style="font-weight:bold; color: ${isPresent ? 'var(--success)' : 'var(--text-light)'}">
+                            ${isPresent ? 'Presente' : 'Faltou'}
+                        </span>
+                    </div>
+                </td>
+                <td>
+                    <button class="btn-attendance" onclick="openAttendanceHistoryModal(${student.id})" title="Ver Diário Completo">📅 Histórico</button>
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        });
+
+        if (classState.active.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Nenhum aluno ativo para chamada.</td></tr>`;
+        }
     }
 
     function renderFinance() {
@@ -776,7 +903,6 @@
             tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Nenhum aluno ativo no momento.</td></tr>`;
         }
 
-        // --- CÁLCULO DE DESPESAS E SALDO ---
         let totalDespesasMes = 0;
         const now = new Date();
         const currentMonth = now.getMonth() + 1;
@@ -787,7 +913,6 @@
         
         classState.despesas.forEach(exp => {
             const [ano, mes, dia] = exp.data_despesa.split('-');
-            // Soma apenas despesas do mês atual no dashboard
             if (parseInt(mes) === currentMonth && parseInt(ano) === currentYear) {
                 totalDespesasMes += Number(exp.valor);
             }
@@ -807,11 +932,9 @@
         }
 
         const saldoLiquido = totals.received - totalDespesasMes;
-
         document.getElementById('fin-total').innerText = formatCurrency(totals.expected);
         document.getElementById('fin-received').innerText = formatCurrency(totals.received);
         document.getElementById('fin-pending').innerText = formatCurrency(totals.pending);
-        
         document.getElementById('fin-despesas').innerText = formatCurrency(totalDespesasMes);
         
         const saldoEl = document.getElementById('fin-saldo');
@@ -819,11 +942,9 @@
         saldoEl.innerText = formatCurrency(saldoLiquido);
 
         if (saldoLiquido >= 0) {
-            saldoEl.style.color = 'var(--success)';
-            cardSaldo.style.borderLeftColor = 'var(--success)';
+            saldoEl.style.color = 'var(--success)'; cardSaldo.style.borderLeftColor = 'var(--success)';
         } else {
-            saldoEl.style.color = 'var(--danger)';
-            cardSaldo.style.borderLeftColor = 'var(--danger)';
+            saldoEl.style.color = 'var(--danger)'; cardSaldo.style.borderLeftColor = 'var(--danger)';
         }
     }
 
@@ -844,16 +965,11 @@
 
             row.innerHTML = `
                 <td><strong>${student.nome}</strong></td>
-                <td class="parent-info">
-                    <div>${student.parent}</div>
-                    ${whatsappHTML}
-                </td>
+                <td class="parent-info"><div>${student.parent}</div>${whatsappHTML}</td>
                 <td>${formatCurrency(student.fee)}</td>
                 <td>${statusPagamento}</td>
                 <td style="color: var(--danger); font-style: italic;">"${student.motivo_exclusao || 'Não informado'}"</td>
-                <td>
-                    <button class="btn-restore" onclick="restoreStudent(${student.id})">↺ Restaurar</button>
-                </td>
+                <td><button class="btn-restore" onclick="restoreStudent(${student.id})">↺ Restaurar</button></td>
             `;
             tableBody.appendChild(row);
         });
