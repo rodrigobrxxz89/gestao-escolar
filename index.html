@@ -30,6 +30,7 @@
             --restore: #AB47BC;
             --history: #26A69A;
             --attendance: #00ACC1;
+            --postit: #FFF59D;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
@@ -70,8 +71,8 @@
         /* Formulários */
         .controls { background-color: var(--card-bg); padding: 20px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.04); border: 1px solid #F0F0F0; }
         .inputs-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
-        .controls input { padding: 14px 16px; border: 2px solid #E0E0E0; border-radius: 10px; font-size: 1rem; background-color: #FAFAFA; font-weight: 600; transition: border-color 0.3s; color: var(--text-dark); }
-        .controls input:focus { border-color: var(--primary); outline: none; background-color: #FFF; }
+        .controls input, .controls textarea { padding: 14px 16px; border: 2px solid #E0E0E0; border-radius: 10px; font-size: 1rem; background-color: #FAFAFA; font-weight: 600; transition: border-color 0.3s; color: var(--text-dark); }
+        .controls input:focus, .controls textarea:focus { border-color: var(--primary); outline: none; background-color: #FFF; }
         .w-full-mobile { flex: 1; min-width: 180px; }
         .w-small-mobile { flex: 0.5; min-width: 110px; }
         .days-selector { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; background: #F3E5F5; padding: 12px 20px; border-radius: 10px; }
@@ -122,7 +123,6 @@
         .parent-info { font-size: 0.9rem; color: #616161; font-weight: 600;}
         .whatsapp-link { display: inline-flex; align-items: center; gap: 4px; color: var(--whatsapp); text-decoration: none; font-weight: 800; background: #E8F5E9; padding: 2px 8px; border-radius: 8px; font-size: 0.8rem; }
         
-        /* Botões Mágicos de WhatsApp e Recibo */
         .btn-wa { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; padding: 2px 6px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: background 0.2s;}
         .btn-wa:hover { background: #C8E6C9; }
         .btn-wa-falta { background: #FFF3E0; color: #F57F17; border-color: #FFECB3; }
@@ -139,6 +139,16 @@
         .btn-restore { background: var(--restore); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(171, 71, 188, 0.3);}
         .btn-history { background: var(--history); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(38, 166, 154, 0.3);}
         .btn-attendance { background: var(--attendance); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(0, 172, 193, 0.3);}
+        .btn-boletim { background: #8E24AA; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(142, 36, 170, 0.3);}
+
+        /* Post-its Virtuais */
+        .postit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .postit { background: var(--postit); padding: 20px; border-radius: 8px; box-shadow: 2px 4px 10px rgba(0,0,0,0.08); position: relative; border-left: 6px solid #FBC02D; transition: transform 0.2s; min-height: 120px;}
+        .postit:hover { transform: translateY(-3px); }
+        .postit.done { opacity: 0.6; text-decoration: line-through; border-left-color: #BDBDBD; background: #E0E0E0; }
+        .postit-text { font-size: 1.1rem; font-weight: 700; color: #424242; margin-bottom: 15px; white-space: pre-wrap; word-wrap: break-word;}
+        .postit-actions { display: flex; justify-content: space-between; position: absolute; bottom: 10px; width: calc(100% - 40px); }
+        .postit-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; }
 
         /* Modais */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(38, 50, 56, 0.6); backdrop-filter: blur(3px); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
@@ -147,8 +157,8 @@
         .modal-content h2 { margin-bottom: 10px; color: var(--primary); font-weight: 800;}
         .modal-form { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
         .modal-form label { font-size: 0.95rem; font-weight: 800; color: var(--text-dark); }
-        .modal-form input { padding: 14px; border: 2px solid #E0E0E0; border-radius: 10px; font-size: 1rem; font-weight: 600; color: var(--text-dark); transition: border-color 0.3s;}
-        .modal-form input:focus { border-color: var(--primary); outline: none; }
+        .modal-form input, .modal-form textarea { padding: 14px; border: 2px solid #E0E0E0; border-radius: 10px; font-size: 1rem; font-weight: 600; color: var(--text-dark); transition: border-color 0.3s;}
+        .modal-form input:focus, .modal-form textarea:focus { border-color: var(--primary); outline: none; }
         .modal-actions { display: flex; gap: 12px; margin-top: 15px; }
         .modal-actions button { flex: 1; padding: 14px; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 1rem; transition: transform 0.2s;}
         .modal-actions button:hover { transform: translateY(-2px); }
@@ -186,7 +196,7 @@
         <header>
             <div class="header-titles">
                 <h1>Gestão Escolar</h1>
-                <p>Sala de Aula, Presença & Financeiro</p>
+                <p>Sala de Aula, Presença, Financeiro & Tarefas</p>
             </div>
             <button class="btn-logout" onclick="handleLogout()">Sair da Conta</button>
         </header>
@@ -195,6 +205,7 @@
             <button class="tab-btn active" onclick="switchTab('sala')">Visualização da Sala</button>
             <button class="tab-btn" onclick="switchTab('presenca')">Lista de Presença</button>
             <button class="tab-btn" onclick="switchTab('financeiro')">Controle Financeiro</button>
+            <button class="tab-btn" onclick="switchTab('tarefas')">Lembretes</button>
             <button class="tab-btn" onclick="switchTab('historico')">Histórico de Ex-Alunos</button>
         </div>
 
@@ -206,14 +217,11 @@
                 <input type="tel" id="student-whatsapp" class="w-full-mobile" placeholder="WhatsApp (só números)">
                 <input type="number" id="student-fee" class="w-small-mobile" placeholder="Valor Mensalidade (R$)" min="0" step="0.01">
             </div>
-            
             <button type="button" style="background:none; border:none; color:var(--primary); font-weight:800; cursor:pointer; font-size: 0.9rem; margin-bottom: 15px;" onclick="document.getElementById('contato-extra-row').style.display='flex'; this.style.display='none';">+ Adicionar outro contato</button>
-            
             <div class="inputs-row" id="contato-extra-row" style="display:none;">
                 <input type="text" id="student-parent-2" class="w-full-mobile" placeholder="Resp. Secundário (Opcional)" autocomplete="off">
                 <input type="tel" id="student-whatsapp-2" class="w-full-mobile" placeholder="WhatsApp 2 (só números)">
             </div>
-
             <div class="days-selector">
                 <span style="color: var(--text-light); font-weight: bold;">Dias da semana:</span>
                 <label><input type="checkbox" value="terca" class="day-cb"> Terça</label>
@@ -237,20 +245,24 @@
             </div>
         </div>
 
-        <!-- ABA CONTROLE DE PRESENÇA -->
+        <!-- ABA CONTROLE DE PRESENÇA E PLANO DE AULA -->
         <div id="tab-presenca" class="tab-content">
             <div class="controls" style="margin-bottom: 25px;">
-                <h2 style="color: var(--primary); margin-bottom: 15px;">Diário de Classe</h2>
+                <h2 style="color: var(--primary); margin-bottom: 15px;">Diário de Classe & Plano de Aula</h2>
                 <div class="inputs-row" style="align-items: center;">
-                    <label style="font-weight: 800; color: var(--text-dark);">Selecione a data da aula:</label>
-                    <input type="date" id="attendance-date" onchange="renderAttendance()" style="max-width: 200px;">
+                    <label style="font-weight: 800; color: var(--text-dark);">Data da aula:</label>
+                    <input type="date" id="attendance-date" onchange="dateChangedHandler()" style="max-width: 150px;">
+                    
+                    <label style="font-weight: 800; color: var(--text-dark); margin-left:15px;">Tema ensinado:</label>
+                    <input type="text" id="lesson-theme" placeholder="Ex: Fração, Leitura..." style="flex:1;">
+                    <button class="btn-save" style="padding: 10px 20px; font-size: 0.9rem;" onclick="saveLessonTheme()">Salvar Tema</button>
                 </div>
             </div>
             <div class="table-container">
                 <h2>Lista de Chamada</h2>
                 <table>
                     <thead>
-                        <tr><th>Aluno</th><th>Dias Previstos</th><th>Presença</th><th>Histórico Mensal</th></tr>
+                        <tr><th>Aluno</th><th>Dias Previstos</th><th>Presença (Dia)</th><th>Relatórios</th></tr>
                     </thead>
                     <tbody id="attendance-table-body"></tbody>
                 </table>
@@ -260,7 +272,7 @@
         <!-- ABA CONTROLE FINANCEIRO -->
         <div id="tab-financeiro" class="tab-content">
             <div class="dashboard-grid">
-                <div class="dash-card total"><h3>A Receber (Mensalidades)</h3><p id="fin-total">R$ 0,00</p></div>
+                <div class="dash-card total"><h3>A Receber (Mês)</h3><p id="fin-total">R$ 0,00</p></div>
                 <div class="dash-card success"><h3>Recebido (Mês)</h3><p id="fin-received">R$ 0,00</p></div>
                 <div class="dash-card warning"><h3>Pendente</h3><p id="fin-pending">R$ 0,00</p></div>
                 <div class="dash-card danger"><h3>Despesas (Mês)</h3><p id="fin-despesas">R$ 0,00</p></div>
@@ -297,6 +309,20 @@
             </div>
         </div>
 
+        <!-- NOVA ABA: LEMBRETES (POST-ITS) -->
+        <div id="tab-tarefas" class="tab-content">
+            <div class="controls">
+                <h2 style="margin-bottom: 15px; color: var(--primary);">Meus Lembretes</h2>
+                <div class="inputs-row">
+                    <input type="text" id="task-text" class="w-full-mobile" placeholder="O que você não pode esquecer? (Ex: Semana de provas do Joãozinho)" autocomplete="off">
+                    <button class="btn-add" style="max-width: 200px;" onclick="addTask()">Colar Lembrete</button>
+                </div>
+            </div>
+            <div class="postit-grid" id="postits-container">
+                <!-- Post-its renderizados aqui -->
+            </div>
+        </div>
+
         <!-- ABA HISTÓRICO DE EX-ALUNOS -->
         <div id="tab-historico" class="tab-content">
             <div class="table-container">
@@ -309,7 +335,7 @@
         </div>
     </div>
 
-    <!-- MODAIS -->
+    <!-- MODAIS DE AÇÃO -->
     <div id="edit-modal" class="modal-overlay">
         <div class="modal-content">
             <h2>Editar Dados do Aluno</h2>
@@ -390,6 +416,28 @@
         </div>
     </div>
 
+    <!-- MODAL DO BOLETIM DE REFORÇO -->
+    <div id="boletim-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Gerar Boletim de Reforço</h2>
+            <p id="boletim-student-name" style="color: var(--text-light); font-weight: bold; margin-bottom: 10px;"></p>
+            <div class="modal-form">
+                <input type="hidden" id="boletim-id">
+                <div style="background: #F3E5F5; padding: 10px; border-radius: 8px;">
+                    <strong style="color: var(--primary);">Presenças neste mês:</strong> <span id="boletim-presencas">0</span>
+                </div>
+                <div>
+                    <label>Anotações e Evolução do Aluno (Mês Atual):</label>
+                    <textarea id="boletim-notes" rows="4" placeholder="Escreva aqui os pontos fortes, dificuldades trabalhadas e progresso do aluno..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="closeModal('boletim-modal')">Cancelar</button>
+                    <button class="btn-boletim" style="flex: 1;" onclick="gerarBoletimPDF()">🖨️ Gerar PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -403,7 +451,7 @@
     const TOTAL_CAPACITY = MAX_DESKS * 3;
     const dayNames = { 'terca': 'Terça', 'quarta': 'Quarta', 'quinta': 'Quinta' };
 
-    let classState = { active: [], inactive: [], despesas: [] };
+    let classState = { active: [], inactive: [], despesas: [], tarefas: [], planos: [] };
 
     const hojePadrao = new Date().toISOString().split('T')[0];
     document.getElementById('expense-date').value = hojePadrao;
@@ -417,7 +465,7 @@
 
     db.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_IN') { showMainApp(); fetchData(); } 
-        else if (event === 'SIGNED_OUT') { showLoginScreen(); classState = { active: [], inactive: [], despesas: [] }; }
+        else if (event === 'SIGNED_OUT') { showLoginScreen(); classState = { active: [], inactive: [], despesas: [], tarefas: [], planos: [] }; }
     });
 
     async function handleLogin(event) {
@@ -450,7 +498,10 @@
     // 3. COMUNICAÇÃO COM O BANCO E REGRAS DE NEGÓCIO
     async function fetchData() {
         const { data: alunosData, error: alunosError } = await db.from('alunos').select('*').order('nome', { ascending: true });
-        const { data: despesasData, error: despesasError } = await db.from('despesas').select('*').order('data_despesa', { ascending: false });
+        const { data: despesasData } = await db.from('despesas').select('*').order('data_despesa', { ascending: false });
+        const { data: tarefasData } = await db.from('tarefas').select('*').order('id', { ascending: false });
+        const { data: planosData } = await db.from('planos_aula').select('*');
+
         if (alunosError) return console.error('Erro:', alunosError);
 
         const now = new Date();
@@ -475,11 +526,15 @@
         classState.active = alunosData.filter(s => s.status !== 'inativo');
         classState.inactive = alunosData.filter(s => s.status === 'inativo');
         classState.despesas = despesasData || [];
+        classState.tarefas = tarefasData || [];
+        classState.planos = planosData || [];
 
+        dateChangedHandler(); // Atualiza o tema da aula baseado na data do input
         renderDaysAndSummary();
         renderFinance();
         renderHistory();
         renderAttendance();
+        renderTarefas();
     }
 
     async function addStudent() {
@@ -501,13 +556,10 @@
         }
 
         const newStudent = { 
-            nome: name, parent: parent, whatsapp: whatsapp, 
-            parent_2: parent2, whatsapp_2: whatsapp2,
-            fee: fee, paid: false, days: selectedDays, status: 'ativo', 
-            historico_pagamentos: [], historico_presencas: [] 
+            nome: name, parent: parent, whatsapp: whatsapp, parent_2: parent2, whatsapp_2: whatsapp2,
+            fee: fee, paid: false, days: selectedDays, status: 'ativo', historico_pagamentos: [], historico_presencas: [] 
         };
         const { error } = await db.from('alunos').insert([newStudent]);
-        
         if (error) return alert('Erro ao salvar o aluno.');
 
         document.getElementById('student-name').value = '';
@@ -523,18 +575,42 @@
     async function removeFromDay(studentId, day) {
         const student = classState.active.find(s => s.id === studentId);
         if (!student) return;
-
         if(confirm(`Remover ${student.nome} da aula de ${dayNames[day]}?`)) {
             const updatedDays = student.days.filter(d => d !== day);
             if (updatedDays.length === 0) {
                 alert("O aluno ficará sem dias na semana. Para excluí-lo totalmente, vá no Controle Financeiro e clique na lixeira.");
             } else {
-                const { error } = await db.from('alunos').update({ days: updatedDays }).eq('id', studentId);
-                if (!error) fetchData();
+                await db.from('alunos').update({ days: updatedDays }).eq('id', studentId);
+                fetchData();
             }
         }
     }
 
+    // --- TEMAS DE AULA ---
+    function dateChangedHandler() {
+        const selectedDate = document.getElementById('attendance-date').value;
+        const plano = classState.planos.find(p => p.data_aula === selectedDate);
+        document.getElementById('lesson-theme').value = plano ? plano.tema : '';
+        renderAttendance();
+    }
+
+    async function saveLessonTheme() {
+        const selectedDate = document.getElementById('attendance-date').value;
+        const tema = document.getElementById('lesson-theme').value.trim();
+        if(!selectedDate) return alert("Selecione uma data.");
+        if(!tema) return alert("Escreva um tema para salvar.");
+
+        const plano = classState.planos.find(p => p.data_aula === selectedDate);
+        if(plano) {
+            await db.from('planos_aula').update({ tema }).eq('id', plano.id);
+        } else {
+            await db.from('planos_aula').insert([{ data_aula: selectedDate, tema }]);
+        }
+        alert("Tema salvo com sucesso!");
+        fetchData();
+    }
+
+    // --- PRESENÇA ---
     async function toggleAttendance(event, studentId) {
         const selectedDate = document.getElementById('attendance-date').value;
         if (!selectedDate) { event.preventDefault(); return alert("Selecione uma data válida."); }
@@ -553,11 +629,27 @@
         else { alert("Erro ao salvar presença."); event.preventDefault(); }
     }
 
+    // --- BUG FIX: ESTORNO DE PAGAMENTO ---
     function handlePaymentClick(event, studentId, isCurrentlyPaid) {
         event.preventDefault(); 
         if (isCurrentlyPaid) {
-            if (confirm("Deseja desmarcar o pagamento deste aluno para o mês atual?")) {
-                db.from('alunos').update({ paid: false, data_ultimo_pagamento: null }).eq('id', studentId).then(() => fetchData());
+            if (confirm("Deseja desmarcar o pagamento deste aluno para o mês atual? O histórico também será corrigido.")) {
+                const student = classState.active.find(s => s.id === studentId);
+                let historico = student.historico_pagamentos || [];
+                
+                // Remove o registro do histórico que tem a mesma data do pagamento atual
+                if(student.data_ultimo_pagamento) {
+                    historico = historico.filter(p => p.data !== student.data_ultimo_pagamento);
+                } else {
+                    // Fallback se não tiver data marcada, tira o ultimo
+                    historico.pop(); 
+                }
+
+                db.from('alunos').update({ 
+                    paid: false, 
+                    data_ultimo_pagamento: null,
+                    historico_pagamentos: historico
+                }).eq('id', studentId).then(() => fetchData());
             }
         } else {
             const student = classState.active.find(s => s.id === studentId);
@@ -588,6 +680,139 @@
         closeModal('payment-modal'); fetchData();
     }
 
+    // --- TAREFAS (POST-ITS) ---
+    async function addTask() {
+        const texto = document.getElementById('task-text').value.trim();
+        if(!texto) return;
+        await db.from('tarefas').insert([{ texto }]);
+        document.getElementById('task-text').value = '';
+        fetchData();
+    }
+    async function toggleTask(id, currentStatus) {
+        await db.from('tarefas').update({ concluida: !currentStatus }).eq('id', id);
+        fetchData();
+    }
+    async function deleteTask(id) {
+        if(confirm("Apagar este lembrete?")) {
+            await db.from('tarefas').delete().eq('id', id);
+            fetchData();
+        }
+    }
+    function renderTarefas() {
+        const container = document.getElementById('postits-container');
+        container.innerHTML = '';
+        classState.tarefas.forEach(t => {
+            const div = document.createElement('div');
+            div.className = `postit ${t.concluida ? 'done' : ''}`;
+            div.innerHTML = `
+                <div class="postit-text">${t.texto}</div>
+                <div class="postit-actions">
+                    <button class="postit-btn" onclick="toggleTask(${t.id}, ${t.concluida})" title="Marcar concluído">${t.concluida ? '✅' : '✔️'}</button>
+                    <button class="postit-btn" style="color:var(--danger);" onclick="deleteTask(${t.id})" title="Excluir">🗑️</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        if(classState.tarefas.length === 0) {
+            container.innerHTML = `<p style="color:var(--text-light); width:100%; grid-column: 1 / -1;">Nenhum lembrete salvo.</p>`;
+        }
+    }
+
+    // --- BOLETIM DE REFORÇO ---
+    function abrirModalBoletim(studentId) {
+        const student = classState.active.find(s => s.id === studentId);
+        if(!student) return;
+
+        document.getElementById('boletim-id').value = student.id;
+        document.getElementById('boletim-student-name').innerText = `Aluno: ${student.nome}`;
+        document.getElementById('boletim-notes').value = '';
+
+        const now = new Date();
+        const currentMonth = now.getMonth() + 1;
+        const currentYear = now.getFullYear();
+
+        let presencasNoMes = 0;
+        const presencas = student.historico_presencas || [];
+        presencas.forEach(dataIso => {
+            const [ano, mes] = dataIso.split('-');
+            if(parseInt(mes) === currentMonth && parseInt(ano) === currentYear) presencasNoMes++;
+        });
+
+        document.getElementById('boletim-presencas').innerText = presencasNoMes;
+        document.getElementById('boletim-modal').classList.add('active');
+    }
+
+    function gerarBoletimPDF() {
+        const id = parseInt(document.getElementById('boletim-id').value);
+        const notes = document.getElementById('boletim-notes').value;
+        const presencasNoMes = document.getElementById('boletim-presencas').innerText;
+        const student = classState.active.find(s => s.id === id);
+        if(!student) return;
+
+        const now = new Date();
+        const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const mesExtenso = meses[now.getMonth()];
+        const respName = student.parent && student.parent !== 'Não Informado' ? student.parent : (student.parent_2 || 'Responsável');
+
+        const win = window.open('', '_blank');
+        win.document.write(`
+            <html>
+            <head>
+                <title>Boletim - ${student.nome}</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap');
+                    body { font-family: 'Nunito', sans-serif; padding: 40px; color: #333; background: #F4F7FA;}
+                    .boletim { background: white; border: 3px solid #7E57C2; border-radius: 20px; padding: 40px; max-width: 700px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+                    .header { text-align: center; margin-bottom: 30px; border-bottom: 2px dashed #E0E0E0; padding-bottom: 20px; }
+                    .header h1 { color: #7E57C2; margin: 0 0 10px 0; font-weight: 800; font-size: 32px; }
+                    .header h2 { color: #FF7043; margin: 0; font-size: 22px; letter-spacing: 1px; }
+                    .info-box { background: #F3E5F5; padding: 15px 20px; border-radius: 12px; margin-bottom: 30px; display: flex; justify-content: space-between; font-size: 18px; }
+                    .content-box { margin-bottom: 30px; }
+                    .content-box h3 { color: #7E57C2; font-size: 20px; border-bottom: 2px solid #FF7043; display: inline-block; margin-bottom: 15px; }
+                    .notes { font-size: 16px; line-height: 1.8; text-align: justify; white-space: pre-wrap; padding: 15px; border: 1px solid #E0E0E0; border-radius: 8px; background: #FAFAFA; min-height: 100px; }
+                    .footer { margin-top: 50px; text-align: center; }
+                    .assinatura { margin-top: 50px; border-top: 1px solid #333; width: 60%; margin-left: auto; margin-right: auto; padding-top: 10px; font-weight: bold; font-size: 16px; }
+                    .data { color: #78909C; font-size: 14px; margin-top: 20px; }
+                    @media print { body { background: white; } .btn-print { display: none; } .boletim { box-shadow: none; border-color: #333; } .header h1, .content-box h3 { color: #333; } .header h2, .info-box { background: transparent; color: #333; border: 1px solid #333; } }
+                </style>
+            </head>
+            <body>
+                <div style="text-align:center; margin-bottom: 20px;">
+                    <button class="btn-print" onclick="window.print()" style="background:#7E57C2; color:white; padding:10px 20px; border:none; border-radius:8px; font-size:16px; cursor:pointer; font-weight:bold;">🖨️ Imprimir / Salvar PDF</button>
+                </div>
+                <div class="boletim">
+                    <div class="header">
+                        <h1>Reforço Super Baixinhos</h1>
+                        <h2>BOLETIM DE EVOLUÇÃO MENSAL</h2>
+                    </div>
+                    <div class="info-box">
+                        <div><strong>Aluno(a):</strong> ${student.nome}</div>
+                        <div><strong>Mês:</strong> ${mesExtenso} / ${currentYear}</div>
+                    </div>
+                    
+                    <div class="content-box">
+                        <h3>Frequência Escolar</h3>
+                        <p style="font-size: 18px; margin:0;">O(A) aluno(a) obteve <strong>${presencasNoMes} presenças</strong> registradas neste mês de referência.</p>
+                    </div>
+
+                    <div class="content-box">
+                        <h3>Anotações da Professora e Evolução</h3>
+                        <div class="notes">${notes || 'Nenhuma anotação extra registrada para este mês.'}</div>
+                    </div>
+
+                    <div class="footer">
+                        <div class="assinatura">Assinatura da Professora</div>
+                        <div class="data">Campo Grande - MS, gerado em ${now.toLocaleDateString('pt-BR')}</div>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `);
+        win.document.close();
+        closeModal('boletim-modal');
+    }
+
+    // --- RESTANTE DO CÓDIGO (Edição, Exclusão, Despesas, Histórico) ---
     function openViewHistoryModal(studentId) {
         const student = classState.active.find(s => s.id === studentId);
         if (!student) return;
@@ -605,7 +830,6 @@
                 const tr = document.createElement('tr');
                 const [ano, mes, dia] = pag.data.split('-');
                 const statusColor = pag.status === 'Pontual' ? 'var(--success)' : 'var(--danger)';
-                // Verifica o responsável principal, se não existir pega o 2
                 const respName = student.parent && student.parent !== 'Não Informado' ? student.parent : (student.parent_2 || 'Responsável');
                 
                 tr.innerHTML = `
@@ -620,23 +844,18 @@
         document.getElementById('view-history-modal').classList.add('active');
     }
 
-    // --- FUNÇÕES MÁGICAS: MENSAGEM WHATSAPP E RECIBO ---
     function enviarMensagemWp(tipo, fone, responsavel, aluno, valor) {
         if(!fone) return alert("Este contato não tem número registrado.");
         let msg = "";
         const respName = responsavel || 'Responsável';
-        if (tipo === 'cobrar') {
-            msg = `Olá, ${respName}, tudo bem? Passando para lembrar da mensalidade das aulas de reforço do(a) ${aluno} no valor de ${formatCurrency(valor)}.`;
-        } else if (tipo === 'falta') {
-            msg = `Olá, ${respName}, tudo bem? Notamos a ausência do(a) ${aluno} na aula de hoje. Está tudo bem com ele(a)?`;
-        }
+        if (tipo === 'cobrar') msg = `Olá, ${respName}, tudo bem? Passando para lembrar da mensalidade das aulas de reforço do(a) ${aluno} no valor de ${formatCurrency(valor)}.`;
+        else if (tipo === 'falta') msg = `Olá, ${respName}, tudo bem? Notamos a ausência do(a) ${aluno} na aula de hoje. Está tudo bem com ele(a)?`;
         window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     function gerarRecibo(aluno, responsavel, valor, dataStr) {
         const [ano, mes, dia] = dataStr.split('-');
         const win = window.open('', '_blank');
-        const valorFormatado = formatCurrency(valor);
         win.document.write(`
             <html>
             <head>
@@ -660,13 +879,8 @@
                 <div class="recibo">
                     <h1>Reforço Super Baixinhos</h1>
                     <h2>RECIBO DE PAGAMENTO</h2>
-                    <div class="conteudo">
-                        Recebi de <strong>${responsavel}</strong> a quantia de <strong>${valorFormatado}</strong> 
-                        referente à mensalidade das aulas de reforço escolar do(a) aluno(a) <strong>${aluno}</strong>.
-                    </div>
-                    <div class="data">
-                        Campo Grande - MS, ${dia}/${mes}/${ano}.
-                    </div>
+                    <div class="conteudo">Recebi de <strong>${responsavel}</strong> a quantia de <strong>${formatCurrency(valor)}</strong> referente à mensalidade das aulas de reforço escolar do(a) aluno(a) <strong>${aluno}</strong>.</div>
+                    <div class="data">Campo Grande - MS, ${dia}/${mes}/${ano}.</div>
                     <div class="assinatura">Assinatura da Professora</div>
                 </div>
             </body>
@@ -674,7 +888,6 @@
         `);
         win.document.close();
     }
-    // ---------------------------------------------------
 
     function openAttendanceHistoryModal(studentId) {
         const student = classState.active.find(s => s.id === studentId);
@@ -684,7 +897,7 @@
         tbody.innerHTML = '';
         const presencas = student.historico_presencas || [];
         if (presencas.length === 0) {
-            tbody.innerHTML = '<tr><td style="text-align:center;">Nenhuma presença registrada para este aluno.</td></tr>';
+            tbody.innerHTML = '<tr><td style="text-align:center;">Nenhuma presença registrada.</td></tr>';
         } else {
             const presencasOrdenadas = [...presencas].sort((a, b) => new Date(b) - new Date(a));
             presencasOrdenadas.forEach(dataIso => {
@@ -718,9 +931,8 @@
         const fee = parseFloat(document.getElementById('edit-fee').value);
 
         if (isNaN(fee) || fee < 0) return alert('Insira um valor válido.');
-
-        const { error } = await db.from('alunos').update({ parent, whatsapp, parent_2, whatsapp_2, fee }).eq('id', id);
-        if (!error) { closeModal('edit-modal'); fetchData(); }
+        await db.from('alunos').update({ parent, whatsapp, parent_2, whatsapp_2, fee }).eq('id', id);
+        closeModal('edit-modal'); fetchData();
     }
 
     function openDeleteModal(studentId) {
@@ -735,14 +947,14 @@
     async function confirmDelete() {
         const id = parseInt(document.getElementById('delete-id').value);
         const reason = document.getElementById('delete-reason').value.trim() || 'Motivo não informado';
-        const { error } = await db.from('alunos').update({ status: 'inativo', motivo_exclusao: reason }).eq('id', id);
-        if (!error) { closeModal('delete-modal'); fetchData(); }
+        await db.from('alunos').update({ status: 'inativo', motivo_exclusao: reason }).eq('id', id);
+        closeModal('delete-modal'); fetchData();
     }
 
     async function restoreStudent(studentId) {
         if(confirm("Deseja restaurar este aluno? Ele voltará para a aba de Controle Financeiro.")) {
-            const { error } = await db.from('alunos').update({ status: 'ativo', motivo_exclusao: null }).eq('id', studentId);
-            if (!error) fetchData();
+            await db.from('alunos').update({ status: 'ativo', motivo_exclusao: null }).eq('id', studentId);
+            fetchData();
         }
     }
 
@@ -750,26 +962,21 @@
         const desc = document.getElementById('expense-desc').value.trim();
         const val = parseFloat(document.getElementById('expense-value').value);
         const date = document.getElementById('expense-date').value;
-
         if (!desc || isNaN(val) || !date) return alert('Preencha todos os campos da despesa.');
-
-        const { error } = await db.from('despesas').insert([{ descricao: desc, valor: val, data_despesa: date }]);
-        if (!error) {
-            document.getElementById('expense-desc').value = '';
-            document.getElementById('expense-value').value = '';
-            document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
-            fetchData();
-        } else alert('Erro ao salvar despesa.');
+        await db.from('despesas').insert([{ descricao: desc, valor: val, data_despesa: date }]);
+        document.getElementById('expense-desc').value = '';
+        document.getElementById('expense-value').value = '';
+        document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+        fetchData();
     }
 
     async function deleteExpense(id) {
         if (confirm("Excluir esta despesa permanentemente?")) {
-            const { error } = await db.from('despesas').delete().eq('id', id);
-            if (!error) fetchData();
+            await db.from('despesas').delete().eq('id', id);
+            fetchData();
         }
     }
 
-    // 4. FUNÇÕES DE INTERFACE GERAIS
     function switchTab(tabName) {
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -782,10 +989,8 @@
     function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
     function formatCurrency(value) { return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
-    // GERADOR DE BLOCO DE CONTATO HTML
     function buildContactHTML(student) {
         let html = '';
-        // Contato 1
         const p1Name = student.parent && student.parent !== 'Não Informado' ? student.parent : 'Resp. 1';
         if (student.whatsapp) {
             html += `<div class="parent-info" style="margin-bottom:8px;">
@@ -800,7 +1005,6 @@
             html += `<div class="parent-info" style="margin-bottom:8px;"><div>${student.parent || 'Não Informado'}</div><span style="color:var(--text-light)">Sem número</span></div>`;
         }
 
-        // Contato 2
         if (student.parent_2 || student.whatsapp_2) {
             const p2Name = student.parent_2 || 'Resp. 2';
             if (student.whatsapp_2) {
@@ -812,14 +1016,12 @@
                         <button class="btn-wa btn-wa-falta" onclick="enviarMensagemWp('falta', '${student.whatsapp_2}', '${p2Name}', '${student.nome}', 0)" title="Aviso de Falta">⚠️</button>
                     </div>
                 </div>`;
-            } else {
-                html += `<div class="parent-info"><div>${p2Name}</div><span style="color:var(--text-light)">Sem número</span></div>`;
-            }
+            } else html += `<div class="parent-info"><div>${p2Name}</div><span style="color:var(--text-light)">Sem número</span></div>`;
         }
         return html;
     }
 
-    // 5. RENDERIZAÇÃO
+    // --- RENDERS ---
     function renderDaysAndSummary() {
         const days = ['terca', 'quarta', 'quinta'];
         let totalOccupiedSlots = 0;
@@ -866,11 +1068,16 @@
                         <span style="font-weight:bold; color: ${isPresent ? 'var(--success)' : 'var(--text-light)'}">${isPresent ? 'Presente' : 'Faltou'}</span>
                     </div>
                 </td>
-                <td><button class="btn-attendance" onclick="openAttendanceHistoryModal(${student.id})" title="Ver Diário Completo">📅 Histórico</button></td>
+                <td>
+                    <div class="action-btns">
+                        <button class="btn-attendance" onclick="openAttendanceHistoryModal(${student.id})" title="Ver Diário Completo">📅 Ver Datas</button>
+                        <button class="btn-boletim" onclick="abrirModalBoletim(${student.id})" title="Gerar Boletim Mensal">🎓 Boletim</button>
+                    </div>
+                </td>
             `;
             tableBody.appendChild(tr);
         });
-        if (classState.active.length === 0) tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Nenhum aluno ativo.</td></tr>`;
+        if (classState.active.length === 0) tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Nenhum aluno ativo para chamada.</td></tr>`;
     }
 
     function renderFinance() {
@@ -886,11 +1093,9 @@
             const row = document.createElement('tr');
             if (!student.paid) row.classList.add('pending-row');
             
-            let daysBadges = (student.days || []).map(d => `<span class="day-badge">${dayNames[d]}</span>`).join('');
-
             row.innerHTML = `
                 <td><strong>${student.nome}</strong></td>
-                <td><div class="days-badge-container">${daysBadges}</div></td>
+                <td><div class="days-badge-container">${(student.days || []).map(d => `<span class="day-badge">${dayNames[d]}</span>`).join('')}</div></td>
                 <td>${buildContactHTML(student)}</td>
                 <td><strong>${formatCurrency(feeValue)}</strong></td>
                 <td>
@@ -910,7 +1115,7 @@
             tableBody.appendChild(row);
         });
 
-        if (classState.active.length === 0) tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Nenhum aluno ativo.</td></tr>`;
+        if (classState.active.length === 0) tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Nenhum aluno ativo no momento.</td></tr>`;
 
         let totalDespesasMes = 0;
         const now = new Date(); const currentMonth = now.getMonth() + 1; const currentYear = now.getFullYear();
