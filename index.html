@@ -29,7 +29,7 @@
             --edit: #29B6F6;
             --restore: #AB47BC;
             --history: #26A69A;
-            --attendance: #00ACC1; /* Azul Ciano para presença */
+            --attendance: #00ACC1;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
@@ -109,7 +109,7 @@
         .desk .delete-btn { position: absolute; top: -6px; right: -6px; background-color: var(--danger); color: white; border: none; border-radius: 50%; width: 26px; height: 26px; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(239, 83, 80, 0.4); z-index: 2; transition: background 0.2s; }
         .desk .delete-btn:hover { background-color: #D32F2F; }
 
-        /* Tabelas */
+        /* Tabelas e Botões Mágicos */
         .table-container { background: var(--card-bg); padding: 20px; border-radius: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.04); overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .table-container h2 { margin-bottom: 10px; color: var(--primary); font-size: 1.4rem; font-weight: 800; }
         table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; min-width: 800px; margin-top: 15px; }
@@ -120,7 +120,16 @@
         tr:hover td { background-color: #FAFAFA; }
         tr.pending-row td { background-color: #FFFDE7; }
         .parent-info { font-size: 0.9rem; color: #616161; font-weight: 600;}
-        .whatsapp-link { display: inline-flex; align-items: center; gap: 4px; color: var(--whatsapp); text-decoration: none; font-weight: 800; margin-top: 4px; background: #E8F5E9; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; }
+        .whatsapp-link { display: inline-flex; align-items: center; gap: 4px; color: var(--whatsapp); text-decoration: none; font-weight: 800; background: #E8F5E9; padding: 2px 8px; border-radius: 8px; font-size: 0.8rem; }
+        
+        /* Botões Mágicos de WhatsApp e Recibo */
+        .btn-wa { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; padding: 2px 6px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: background 0.2s;}
+        .btn-wa:hover { background: #C8E6C9; }
+        .btn-wa-falta { background: #FFF3E0; color: #F57F17; border-color: #FFECB3; }
+        .btn-wa-falta:hover { background: #FFECB3; }
+        .btn-receipt { background: var(--primary); color: white; border: none; padding: 4px 10px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 700; box-shadow: 0 2px 4px rgba(126,87,194,0.3); }
+        .btn-receipt:hover { background: var(--primary-hover); }
+
         .days-badge-container { display: flex; gap: 6px; flex-wrap: wrap; }
         .day-badge { background: #E1BEE7; color: #4A148C; font-weight: 700; font-size: 0.75rem; padding: 4px 8px; border-radius: 8px; }
         
@@ -189,14 +198,22 @@
             <button class="tab-btn" onclick="switchTab('historico')">Histórico de Ex-Alunos</button>
         </div>
 
-        <!-- Formulário Lançar Alunos (Aparece na Sala) -->
+        <!-- Formulário Lançar Alunos -->
         <div class="controls" id="form-alunos">
             <div class="inputs-row">
                 <input type="text" id="student-name" class="w-full-mobile" placeholder="Nome do aluno..." autocomplete="off">
-                <input type="text" id="student-parent" class="w-full-mobile" placeholder="Nome do Responsável..." autocomplete="off">
+                <input type="text" id="student-parent" class="w-full-mobile" placeholder="Resp. Principal..." autocomplete="off">
                 <input type="tel" id="student-whatsapp" class="w-full-mobile" placeholder="WhatsApp (só números)">
                 <input type="number" id="student-fee" class="w-small-mobile" placeholder="Valor Mensalidade (R$)" min="0" step="0.01">
             </div>
+            
+            <button type="button" style="background:none; border:none; color:var(--primary); font-weight:800; cursor:pointer; font-size: 0.9rem; margin-bottom: 15px;" onclick="document.getElementById('contato-extra-row').style.display='flex'; this.style.display='none';">+ Adicionar outro contato</button>
+            
+            <div class="inputs-row" id="contato-extra-row" style="display:none;">
+                <input type="text" id="student-parent-2" class="w-full-mobile" placeholder="Resp. Secundário (Opcional)" autocomplete="off">
+                <input type="tel" id="student-whatsapp-2" class="w-full-mobile" placeholder="WhatsApp 2 (só números)">
+            </div>
+
             <div class="days-selector">
                 <span style="color: var(--text-light); font-weight: bold;">Dias da semana:</span>
                 <label><input type="checkbox" value="terca" class="day-cb"> Terça</label>
@@ -209,20 +226,10 @@
         <!-- ABA SALA DE AULA -->
         <div id="tab-sala" class="tab-content active">
             <div class="dashboard-grid">
-                <div class="dash-card total">
-                    <h3>Capacidade Total (Semana)</h3>
-                    <p>18 Vagas</p>
-                </div>
-                <div class="dash-card info">
-                    <h3>Alunos Únicos Matriculados</h3>
-                    <p id="class-unique-students">0</p>
-                </div>
-                <div class="dash-card warning">
-                    <h3>Vagas Livres na Semana</h3>
-                    <p id="class-free-slots">18</p>
-                </div>
+                <div class="dash-card total"><h3>Capacidade Total (Semana)</h3><p>18 Vagas</p></div>
+                <div class="dash-card info"><h3>Alunos Únicos Matriculados</h3><p id="class-unique-students">0</p></div>
+                <div class="dash-card warning"><h3>Vagas Livres na Semana</h3><p id="class-free-slots">18</p></div>
             </div>
-
             <div class="week-grid">
                 <div class="day-card" id="card-terca"></div>
                 <div class="day-card" id="card-quarta"></div>
@@ -230,27 +237,20 @@
             </div>
         </div>
 
-        <!-- NOVA ABA: CONTROLE DE PRESENÇA -->
+        <!-- ABA CONTROLE DE PRESENÇA -->
         <div id="tab-presenca" class="tab-content">
             <div class="controls" style="margin-bottom: 25px;">
                 <h2 style="color: var(--primary); margin-bottom: 15px;">Diário de Classe</h2>
                 <div class="inputs-row" style="align-items: center;">
                     <label style="font-weight: 800; color: var(--text-dark);">Selecione a data da aula:</label>
                     <input type="date" id="attendance-date" onchange="renderAttendance()" style="max-width: 200px;">
-                    <span style="color: var(--text-light); font-size: 0.9rem; margin-left: 10px;">(Marque quem compareceu neste dia)</span>
                 </div>
             </div>
-
             <div class="table-container">
                 <h2>Lista de Chamada</h2>
                 <table>
                     <thead>
-                        <tr>
-                            <th>Aluno</th>
-                            <th>Dias Previstos (Semana)</th>
-                            <th>Presença (no dia selecionado)</th>
-                            <th>Histórico Mensal</th>
-                        </tr>
+                        <tr><th>Aluno</th><th>Dias Previstos</th><th>Presença</th><th>Histórico Mensal</th></tr>
                     </thead>
                     <tbody id="attendance-table-body"></tbody>
                 </table>
@@ -260,40 +260,18 @@
         <!-- ABA CONTROLE FINANCEIRO -->
         <div id="tab-financeiro" class="tab-content">
             <div class="dashboard-grid">
-                <div class="dash-card total">
-                    <h3>A Receber (Mensalidades)</h3>
-                    <p id="fin-total">R$ 0,00</p>
-                </div>
-                <div class="dash-card success">
-                    <h3>Recebido (Mês)</h3>
-                    <p id="fin-received">R$ 0,00</p>
-                </div>
-                <div class="dash-card warning">
-                    <h3>Pendente</h3>
-                    <p id="fin-pending">R$ 0,00</p>
-                </div>
-                <div class="dash-card danger">
-                    <h3>Despesas (Mês)</h3>
-                    <p id="fin-despesas">R$ 0,00</p>
-                </div>
-                <div class="dash-card info" id="card-saldo" style="border-left-color: var(--primary);">
-                    <h3>Resultado Líquido (Mês)</h3>
-                    <p id="fin-saldo">R$ 0,00</p>
-                </div>
+                <div class="dash-card total"><h3>A Receber (Mensalidades)</h3><p id="fin-total">R$ 0,00</p></div>
+                <div class="dash-card success"><h3>Recebido (Mês)</h3><p id="fin-received">R$ 0,00</p></div>
+                <div class="dash-card warning"><h3>Pendente</h3><p id="fin-pending">R$ 0,00</p></div>
+                <div class="dash-card danger"><h3>Despesas (Mês)</h3><p id="fin-despesas">R$ 0,00</p></div>
+                <div class="dash-card info" id="card-saldo" style="border-left-color: var(--primary);"><h3>Resultado Líquido</h3><p id="fin-saldo">R$ 0,00</p></div>
             </div>
 
             <div class="table-container">
                 <h2>Alunos Ativos e Pagamentos</h2>
                 <table>
                     <thead>
-                        <tr>
-                            <th>Aluno</th>
-                            <th>Dias Inscritos</th>
-                            <th>Responsável / Contato</th>
-                            <th>Valor Único</th>
-                            <th>Status de Pagamento</th>
-                            <th>Ações</th>
-                        </tr>
+                        <tr><th>Aluno</th><th>Dias Inscritos</th><th>Responsáveis / WhatsApp</th><th>Valor Único</th><th>Status de Pagamento</th><th>Ações</th></tr>
                     </thead>
                     <tbody id="financial-table-body"></tbody>
                 </table>
@@ -302,8 +280,8 @@
             <div class="controls" style="margin-top: 30px;">
                 <h2 style="margin-bottom: 15px; color: var(--primary);">Lançar Despesa da Escolinha</h2>
                 <div class="inputs-row">
-                    <input type="text" id="expense-desc" class="w-full-mobile" placeholder="Descrição (ex: Papel, Lanche...)">
-                    <input type="number" id="expense-value" class="w-small-mobile" placeholder="Valor Gasto (R$)" min="0" step="0.01">
+                    <input type="text" id="expense-desc" class="w-full-mobile" placeholder="Descrição (ex: Papel...)">
+                    <input type="number" id="expense-value" class="w-small-mobile" placeholder="Valor (R$)" min="0" step="0.01">
                     <input type="date" id="expense-date" class="w-small-mobile">
                     <button class="btn-add" style="flex: 1; background-color: var(--danger); box-shadow: 0 4px 10px rgba(239, 83, 80, 0.3);" onclick="addExpense()">Registrar Despesa</button>
                 </div>
@@ -313,9 +291,7 @@
                 <h2>Histórico de Despesas</h2>
                 <p style="color: var(--text-light); font-size: 0.9rem;">O dashboard acima soma apenas os gastos do mês atual.</p>
                 <table>
-                    <thead>
-                        <tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Ação</th></tr>
-                    </thead>
+                    <thead><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Ação</th></tr></thead>
                     <tbody id="expenses-table-body"></tbody>
                 </table>
             </div>
@@ -325,27 +301,24 @@
         <div id="tab-historico" class="tab-content">
             <div class="table-container">
                 <h2>Histórico de Ex-Alunos</h2>
-                <p style="color: var(--text-light); font-size: 0.9rem;">Consulta de alunos que saíram da escola.</p>
                 <table>
-                    <thead>
-                        <tr>
-                            <th>Aluno</th><th>Responsável / Contato</th><th>Mensalidade Base</th><th>Situação na Saída</th><th>Motivo da Exclusão</th><th>Ações</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Aluno</th><th>Contatos</th><th>Mensalidade Base</th><th>Situação na Saída</th><th>Motivo da Exclusão</th><th>Ações</th></tr></thead>
                     <tbody id="history-table-body"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- MODAIS DE AÇÃO -->
+    <!-- MODAIS -->
     <div id="edit-modal" class="modal-overlay">
         <div class="modal-content">
             <h2>Editar Dados do Aluno</h2>
             <div class="modal-form">
                 <input type="hidden" id="edit-id">
-                <div><label>Responsável</label><input type="text" id="edit-parent" placeholder="Nome do Responsável"></div>
-                <div><label>WhatsApp</label><input type="tel" id="edit-whatsapp" placeholder="Apenas números"></div>
+                <div><label>Responsável Principal</label><input type="text" id="edit-parent"></div>
+                <div><label>WhatsApp Principal</label><input type="tel" id="edit-whatsapp"></div>
+                <div><label>Responsável 2 (Opcional)</label><input type="text" id="edit-parent-2"></div>
+                <div><label>WhatsApp 2</label><input type="tel" id="edit-whatsapp-2"></div>
                 <div><label>Mensalidade (R$)</label><input type="number" id="edit-fee" step="0.01"></div>
                 <div class="modal-actions">
                     <button class="btn-cancel" onclick="closeModal('edit-modal')">Cancelar</button>
@@ -386,12 +359,12 @@
     </div>
 
     <div id="view-history-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-content" style="max-width: 600px;">
             <h2>Relatório de Pagamentos</h2>
             <p id="view-history-student-name" style="color: var(--text-light); font-weight: bold; margin-bottom: 15px;"></p>
             <div class="table-container" style="padding: 0; box-shadow: none;">
                 <table style="min-width: 100%; margin-top: 0;">
-                    <thead><tr><th>Data Recebida</th><th>Valor Pago</th><th>Avaliação</th></tr></thead>
+                    <thead><tr><th>Data Recebida</th><th>Valor Pago</th><th>Avaliação</th><th>Ação</th></tr></thead>
                     <tbody id="view-history-table-body"></tbody>
                 </table>
             </div>
@@ -401,7 +374,6 @@
         </div>
     </div>
 
-    <!-- NOVO MODAL: RELATÓRIO DE PRESENÇA -->
     <div id="view-attendance-modal" class="modal-overlay">
         <div class="modal-content" style="max-width: 400px;">
             <h2>Diário de Presença</h2>
@@ -433,7 +405,6 @@
 
     let classState = { active: [], inactive: [], despesas: [] };
 
-    // Set today's date on expense and attendance inputs
     const hojePadrao = new Date().toISOString().split('T')[0];
     document.getElementById('expense-date').value = hojePadrao;
     document.getElementById('attendance-date').value = hojePadrao;
@@ -455,7 +426,6 @@
         const password = document.getElementById('login-password').value;
         const btn = document.getElementById('btn-submit-login');
         const errorMsg = document.getElementById('login-error-msg');
-
         btn.innerText = "Verificando..."; btn.disabled = true; errorMsg.style.display = 'none';
 
         const { error } = await db.auth.signInWithPassword({ email: email, password: password });
@@ -472,18 +442,16 @@
         document.getElementById('btn-submit-login').innerText = "Entrar Seguramente";
         document.getElementById('btn-submit-login').disabled = false;
     }
-
     function showMainApp() {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
     }
 
-    // 3. COMUNICAÇÃO COM O BANCO
+    // 3. COMUNICAÇÃO COM O BANCO E REGRAS DE NEGÓCIO
     async function fetchData() {
         const { data: alunosData, error: alunosError } = await db.from('alunos').select('*').order('nome', { ascending: true });
         const { data: despesasData, error: despesasError } = await db.from('despesas').select('*').order('data_despesa', { ascending: false });
-
-        if (alunosError) return console.error('Erro ao buscar dados:', alunosError);
+        if (alunosError) return console.error('Erro:', alunosError);
 
         const now = new Date();
         const currentMonth = now.getMonth() + 1;
@@ -492,7 +460,7 @@
 
         for (let student of alunosData) {
             if (student.status !== 'inativo' && student.paid && student.data_ultimo_pagamento) {
-                const [ano, mes, dia] = student.data_ultimo_pagamento.split('-');
+                const [ano, mes] = student.data_ultimo_pagamento.split('-');
                 if (parseInt(mes) !== currentMonth || parseInt(ano) !== currentYear) {
                     needsReset = true; break;
                 }
@@ -511,13 +479,15 @@
         renderDaysAndSummary();
         renderFinance();
         renderHistory();
-        renderAttendance(); // Renderiza a nova aba de presença
+        renderAttendance();
     }
 
     async function addStudent() {
         const name = document.getElementById('student-name').value.trim();
         const parent = document.getElementById('student-parent').value.trim() || 'Não Informado';
         const whatsapp = document.getElementById('student-whatsapp').value.replace(/\D/g, ''); 
+        const parent2 = document.getElementById('student-parent-2').value.trim();
+        const whatsapp2 = document.getElementById('student-whatsapp-2').value.replace(/\D/g, ''); 
         const fee = parseFloat(document.getElementById('student-fee').value);
         const selectedDays = Array.from(document.querySelectorAll('.day-cb:checked')).map(cb => cb.value);
 
@@ -531,8 +501,10 @@
         }
 
         const newStudent = { 
-            nome: name, parent: parent, whatsapp: whatsapp, fee: fee, paid: false, 
-            days: selectedDays, status: 'ativo', historico_pagamentos: [], historico_presencas: [] 
+            nome: name, parent: parent, whatsapp: whatsapp, 
+            parent_2: parent2, whatsapp_2: whatsapp2,
+            fee: fee, paid: false, days: selectedDays, status: 'ativo', 
+            historico_pagamentos: [], historico_presencas: [] 
         };
         const { error } = await db.from('alunos').insert([newStudent]);
         
@@ -541,6 +513,8 @@
         document.getElementById('student-name').value = '';
         document.getElementById('student-parent').value = '';
         document.getElementById('student-whatsapp').value = '';
+        document.getElementById('student-parent-2').value = '';
+        document.getElementById('student-whatsapp-2').value = '';
         document.getElementById('student-fee').value = '';
         document.querySelectorAll('.day-cb').forEach(cb => cb.checked = false);
         fetchData();
@@ -561,13 +535,9 @@
         }
     }
 
-    // --- NOVA LÓGICA DE PRESENÇA ---
     async function toggleAttendance(event, studentId) {
         const selectedDate = document.getElementById('attendance-date').value;
-        if (!selectedDate) {
-            event.preventDefault();
-            return alert("Por favor, selecione uma data válida para a aula.");
-        }
+        if (!selectedDate) { event.preventDefault(); return alert("Selecione uma data válida."); }
 
         const student = classState.active.find(s => s.id === studentId);
         if (!student) return;
@@ -575,47 +545,13 @@
         let presencas = student.historico_presencas || [];
         const isPresent = presencas.includes(selectedDate);
 
-        if (isPresent) {
-            presencas = presencas.filter(d => d !== selectedDate); // Remove se desmarcar
-        } else {
-            presencas.push(selectedDate); // Adiciona se marcar
-        }
+        if (isPresent) presencas = presencas.filter(d => d !== selectedDate);
+        else presencas.push(selectedDate);
 
         const { error } = await db.from('alunos').update({ historico_presencas: presencas }).eq('id', studentId);
-        if (!error) {
-            // Atualiza localmente para não piscar a tela inteira atoa
-            student.historico_presencas = presencas;
-            renderAttendance();
-        } else {
-            alert("Erro ao salvar presença.");
-            event.preventDefault();
-        }
+        if (!error) { student.historico_presencas = presencas; renderAttendance(); } 
+        else { alert("Erro ao salvar presença."); event.preventDefault(); }
     }
-
-    function openAttendanceHistoryModal(studentId) {
-        const student = classState.active.find(s => s.id === studentId);
-        if (!student) return;
-
-        document.getElementById('view-attendance-student-name').innerText = `Aluno: ${student.nome}`;
-        const tbody = document.getElementById('view-attendance-table-body');
-        tbody.innerHTML = '';
-
-        const presencas = student.historico_presencas || [];
-        if (presencas.length === 0) {
-            tbody.innerHTML = '<tr><td style="text-align:center;">Nenhuma presença registrada para este aluno ainda.</td></tr>';
-        } else {
-            // Ordena da mais recente para a mais antiga
-            const presencasOrdenadas = [...presencas].sort((a, b) => new Date(b) - new Date(a));
-            presencasOrdenadas.forEach(dataIso => {
-                const tr = document.createElement('tr');
-                const [ano, mes, dia] = dataIso.split('-');
-                tr.innerHTML = `<td><strong style="color: var(--primary);">&bull; ${dia}/${mes}/${ano}</strong></td>`;
-                tbody.appendChild(tr);
-            });
-        }
-        document.getElementById('view-attendance-modal').classList.add('active');
-    }
-    // -------------------------------
 
     function handlePaymentClick(event, studentId, isCurrentlyPaid) {
         event.preventDefault(); 
@@ -662,22 +598,129 @@
 
         const historico = student.historico_pagamentos || [];
         if (historico.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum pagamento registrado ainda.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhum pagamento registrado ainda.</td></tr>';
         } else {
             const historicoOrdenado = [...historico].sort((a, b) => new Date(b.data) - new Date(a.data));
             historicoOrdenado.forEach(pag => {
                 const tr = document.createElement('tr');
                 const [ano, mes, dia] = pag.data.split('-');
                 const statusColor = pag.status === 'Pontual' ? 'var(--success)' : 'var(--danger)';
+                // Verifica o responsável principal, se não existir pega o 2
+                const respName = student.parent && student.parent !== 'Não Informado' ? student.parent : (student.parent_2 || 'Responsável');
+                
                 tr.innerHTML = `
                     <td><strong>${dia}/${mes}/${ano}</strong></td>
                     <td>${formatCurrency(pag.valor)}</td>
                     <td style="color: ${statusColor}; font-weight: bold; text-transform: uppercase; font-size: 0.85rem;">${pag.status}</td>
+                    <td><button class="btn-receipt" onclick="gerarRecibo('${student.nome}', '${respName}', ${pag.valor}, '${pag.data}')">🖨️ Imprimir</button></td>
                 `;
                 tbody.appendChild(tr);
             });
         }
         document.getElementById('view-history-modal').classList.add('active');
+    }
+
+    // --- FUNÇÕES MÁGICAS: MENSAGEM WHATSAPP E RECIBO ---
+    function enviarMensagemWp(tipo, fone, responsavel, aluno, valor) {
+        if(!fone) return alert("Este contato não tem número registrado.");
+        let msg = "";
+        const respName = responsavel || 'Responsável';
+        if (tipo === 'cobrar') {
+            msg = `Olá, ${respName}, tudo bem? Passando para lembrar da mensalidade das aulas de reforço do(a) ${aluno} no valor de ${formatCurrency(valor)}.`;
+        } else if (tipo === 'falta') {
+            msg = `Olá, ${respName}, tudo bem? Notamos a ausência do(a) ${aluno} na aula de hoje. Está tudo bem com ele(a)?`;
+        }
+        window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function gerarRecibo(aluno, responsavel, valor, dataStr) {
+        const [ano, mes, dia] = dataStr.split('-');
+        const win = window.open('', '_blank');
+        const valorFormatado = formatCurrency(valor);
+        win.document.write(`
+            <html>
+            <head>
+                <title>Recibo - ${aluno}</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap');
+                    body { font-family: 'Nunito', sans-serif; padding: 40px; color: #333; }
+                    .recibo { border: 2px solid #7E57C2; border-radius: 15px; padding: 40px; max-width: 650px; margin: 0 auto; text-align: center; }
+                    .recibo h1 { color: #7E57C2; margin-bottom: 5px; font-weight: 800; font-size: 28px; }
+                    .recibo h2 { color: #FF7043; margin-top: 0; font-size: 20px; letter-spacing: 2px; }
+                    .conteudo { font-size: 18px; text-align: justify; line-height: 1.8; margin-top: 40px; }
+                    .data { font-size: 18px; margin-top: 40px; text-align: right; }
+                    .assinatura { margin-top: 80px; border-top: 1px solid #333; width: 60%; margin-left: auto; margin-right: auto; padding-top: 10px; font-weight: bold; }
+                    @media print { .btn-print { display: none; } }
+                </style>
+            </head>
+            <body>
+                <div style="text-align:center; margin-bottom: 20px;">
+                    <button class="btn-print" onclick="window.print()" style="background:#7E57C2; color:white; padding:10px 20px; border:none; border-radius:8px; font-size:16px; cursor:pointer; font-weight:bold;">🖨️ Imprimir / Salvar PDF</button>
+                </div>
+                <div class="recibo">
+                    <h1>Reforço Super Baixinhos</h1>
+                    <h2>RECIBO DE PAGAMENTO</h2>
+                    <div class="conteudo">
+                        Recebi de <strong>${responsavel}</strong> a quantia de <strong>${valorFormatado}</strong> 
+                        referente à mensalidade das aulas de reforço escolar do(a) aluno(a) <strong>${aluno}</strong>.
+                    </div>
+                    <div class="data">
+                        Campo Grande - MS, ${dia}/${mes}/${ano}.
+                    </div>
+                    <div class="assinatura">Assinatura da Professora</div>
+                </div>
+            </body>
+            </html>
+        `);
+        win.document.close();
+    }
+    // ---------------------------------------------------
+
+    function openAttendanceHistoryModal(studentId) {
+        const student = classState.active.find(s => s.id === studentId);
+        if (!student) return;
+        document.getElementById('view-attendance-student-name').innerText = `Aluno: ${student.nome}`;
+        const tbody = document.getElementById('view-attendance-table-body');
+        tbody.innerHTML = '';
+        const presencas = student.historico_presencas || [];
+        if (presencas.length === 0) {
+            tbody.innerHTML = '<tr><td style="text-align:center;">Nenhuma presença registrada para este aluno.</td></tr>';
+        } else {
+            const presencasOrdenadas = [...presencas].sort((a, b) => new Date(b) - new Date(a));
+            presencasOrdenadas.forEach(dataIso => {
+                const tr = document.createElement('tr');
+                const [ano, mes, dia] = dataIso.split('-');
+                tr.innerHTML = `<td><strong style="color: var(--primary);">&bull; ${dia}/${mes}/${ano}</strong></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+        document.getElementById('view-attendance-modal').classList.add('active');
+    }
+
+    function openEditModal(studentId) {
+        const student = classState.active.find(s => s.id === studentId);
+        if (!student) return;
+        document.getElementById('edit-id').value = student.id;
+        document.getElementById('edit-parent').value = student.parent === 'Não Informado' ? '' : student.parent;
+        document.getElementById('edit-whatsapp').value = student.whatsapp || '';
+        document.getElementById('edit-parent-2').value = student.parent_2 || '';
+        document.getElementById('edit-whatsapp-2').value = student.whatsapp_2 || '';
+        document.getElementById('edit-fee').value = student.fee;
+        document.getElementById('edit-modal').classList.add('active');
+    }
+
+    async function saveEdit() {
+        const id = parseInt(document.getElementById('edit-id').value);
+        const parent = document.getElementById('edit-parent').value.trim() || 'Não Informado';
+        const whatsapp = document.getElementById('edit-whatsapp').value.replace(/\D/g, '');
+        const parent_2 = document.getElementById('edit-parent-2').value.trim();
+        const whatsapp_2 = document.getElementById('edit-whatsapp-2').value.replace(/\D/g, '');
+        const fee = parseFloat(document.getElementById('edit-fee').value);
+
+        if (isNaN(fee) || fee < 0) return alert('Insira um valor válido.');
+
+        const { error } = await db.from('alunos').update({ parent, whatsapp, parent_2, whatsapp_2, fee }).eq('id', id);
+        if (!error) { closeModal('edit-modal'); fetchData(); }
     }
 
     function openDeleteModal(studentId) {
@@ -703,28 +746,6 @@
         }
     }
 
-    function openEditModal(studentId) {
-        const student = classState.active.find(s => s.id === studentId);
-        if (!student) return;
-        document.getElementById('edit-id').value = student.id;
-        document.getElementById('edit-parent').value = student.parent === 'Não Informado' ? '' : student.parent;
-        document.getElementById('edit-whatsapp').value = student.whatsapp;
-        document.getElementById('edit-fee').value = student.fee;
-        document.getElementById('edit-modal').classList.add('active');
-    }
-
-    async function saveEdit() {
-        const id = parseInt(document.getElementById('edit-id').value);
-        const parent = document.getElementById('edit-parent').value.trim() || 'Não Informado';
-        const whatsapp = document.getElementById('edit-whatsapp').value.replace(/\D/g, '');
-        const fee = parseFloat(document.getElementById('edit-fee').value);
-
-        if (isNaN(fee) || fee < 0) return alert('Insira um valor válido.');
-
-        const { error } = await db.from('alunos').update({ parent: parent, whatsapp: whatsapp, fee: fee }).eq('id', id);
-        if (!error) { closeModal('edit-modal'); fetchData(); }
-    }
-
     async function addExpense() {
         const desc = document.getElementById('expense-desc').value.trim();
         const val = parseFloat(document.getElementById('expense-value').value);
@@ -738,9 +759,7 @@
             document.getElementById('expense-value').value = '';
             document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
             fetchData();
-        } else {
-            alert('Erro ao salvar despesa.');
-        }
+        } else alert('Erro ao salvar despesa.');
     }
 
     async function deleteExpense(id) {
@@ -756,55 +775,74 @@
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
         document.getElementById(`tab-${tabName}`).classList.add('active');
-        
-        if(tabName === 'sala') {
-            document.getElementById('form-alunos').style.display = 'block';
-        } else {
-            document.getElementById('form-alunos').style.display = 'none';
-        }
+        if(tabName === 'sala') document.getElementById('form-alunos').style.display = 'block';
+        else document.getElementById('form-alunos').style.display = 'none';
     }
 
     function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
     function formatCurrency(value) { return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
+    // GERADOR DE BLOCO DE CONTATO HTML
+    function buildContactHTML(student) {
+        let html = '';
+        // Contato 1
+        const p1Name = student.parent && student.parent !== 'Não Informado' ? student.parent : 'Resp. 1';
+        if (student.whatsapp) {
+            html += `<div class="parent-info" style="margin-bottom:8px;">
+                <div>${p1Name}</div>
+                <div style="display:flex; gap:4px; align-items:center; margin-top:2px;">
+                    <a class="whatsapp-link" href="https://wa.me/55${student.whatsapp}" target="_blank">💬 ${student.whatsapp}</a>
+                    <button class="btn-wa" onclick="enviarMensagemWp('cobrar', '${student.whatsapp}', '${p1Name}', '${student.nome}', ${student.fee})" title="Cobrar Mensalidade">🔔</button>
+                    <button class="btn-wa btn-wa-falta" onclick="enviarMensagemWp('falta', '${student.whatsapp}', '${p1Name}', '${student.nome}', 0)" title="Aviso de Falta">⚠️</button>
+                </div>
+            </div>`;
+        } else {
+            html += `<div class="parent-info" style="margin-bottom:8px;"><div>${student.parent || 'Não Informado'}</div><span style="color:var(--text-light)">Sem número</span></div>`;
+        }
+
+        // Contato 2
+        if (student.parent_2 || student.whatsapp_2) {
+            const p2Name = student.parent_2 || 'Resp. 2';
+            if (student.whatsapp_2) {
+                html += `<div class="parent-info">
+                    <div>${p2Name}</div>
+                    <div style="display:flex; gap:4px; align-items:center; margin-top:2px;">
+                        <a class="whatsapp-link" href="https://wa.me/55${student.whatsapp_2}" target="_blank">💬 ${student.whatsapp_2}</a>
+                        <button class="btn-wa" onclick="enviarMensagemWp('cobrar', '${student.whatsapp_2}', '${p2Name}', '${student.nome}', ${student.fee})" title="Cobrar Mensalidade">🔔</button>
+                        <button class="btn-wa btn-wa-falta" onclick="enviarMensagemWp('falta', '${student.whatsapp_2}', '${p2Name}', '${student.nome}', 0)" title="Aviso de Falta">⚠️</button>
+                    </div>
+                </div>`;
+            } else {
+                html += `<div class="parent-info"><div>${p2Name}</div><span style="color:var(--text-light)">Sem número</span></div>`;
+            }
+        }
+        return html;
+    }
+
     // 5. RENDERIZAÇÃO
     function renderDaysAndSummary() {
         const days = ['terca', 'quarta', 'quinta'];
         let totalOccupiedSlots = 0;
-
         days.forEach(day => {
             const container = document.getElementById(`card-${day}`);
             const studentsInDay = classState.active.filter(s => s.days && s.days.includes(day));
             totalOccupiedSlots += studentsInDay.length;
             const availableSeats = MAX_DESKS - studentsInDay.length;
 
-            let html = `
-                <div class="day-header">
-                    <h2>${dayNames[day]}</h2>
-                    <div class="day-stats">Livre: ${availableSeats} | Ocupado: ${studentsInDay.length}</div>
-                </div>
-                <div class="desks-grid">
-            `;
-
+            let html = `<div class="day-header"><h2>${dayNames[day]}</h2><div class="day-stats">Livre: ${availableSeats} | Ocupado: ${studentsInDay.length}</div></div><div class="desks-grid">`;
             for (let i = 0; i < MAX_DESKS; i++) {
                 if (i < studentsInDay.length) {
                     const student = studentsInDay[i];
                     const badgeClass = student.paid ? 'badge-paid' : 'badge-pending';
-                    html += `
-                        <div class="desk occupied">
-                            <button class="delete-btn" onclick="removeFromDay(${student.id}, '${day}')" title="Remover da aula">X</button>
-                            <span class="student-name">${student.nome}</span>
-                            <span class="payment-badge ${badgeClass}">${student.paid ? 'Pago' : 'Pendente'}</span>
-                        </div>
-                    `;
-                } else {
-                    html += `<div class="desk empty"><span>🪑 Vaga</span></div>`;
-                }
+                    html += `<div class="desk occupied">
+                        <button class="delete-btn" onclick="removeFromDay(${student.id}, '${day}')" title="Remover da aula">X</button>
+                        <span class="student-name">${student.nome}</span>
+                        <span class="payment-badge ${badgeClass}">${student.paid ? 'Pago' : 'Pendente'}</span>
+                    </div>`;
+                } else html += `<div class="desk empty"><span>🪑 Vaga</span></div>`;
             }
-            html += `</div>`;
-            container.innerHTML = html;
+            html += `</div>`; container.innerHTML = html;
         });
-
         document.getElementById('class-unique-students').innerText = classState.active.length;
         document.getElementById('class-free-slots').innerText = TOTAL_CAPACITY - totalOccupiedSlots;
     }
@@ -812,41 +850,27 @@
     function renderAttendance() {
         const tableBody = document.getElementById('attendance-table-body');
         tableBody.innerHTML = '';
-        
         const selectedDate = document.getElementById('attendance-date').value;
 
         classState.active.forEach(student => {
             const tr = document.createElement('tr');
-            
-            let daysArray = student.days || [];
-            let daysBadges = daysArray.map(d => `<span class="day-badge">${dayNames[d]}</span>`).join('');
-            
-            const presencas = student.historico_presencas || [];
-            const isPresent = presencas.includes(selectedDate);
+            let daysBadges = (student.days || []).map(d => `<span class="day-badge">${dayNames[d]}</span>`).join('');
+            const isPresent = (student.historico_presencas || []).includes(selectedDate);
 
             tr.innerHTML = `
                 <td><strong>${student.nome}</strong></td>
                 <td><div class="days-badge-container">${daysBadges}</div></td>
                 <td>
                     <div style="display:flex; align-items:center; gap: 8px;">
-                        <input type="checkbox" style="width:20px; height:20px; cursor:pointer;" 
-                            ${isPresent ? 'checked' : ''} 
-                            onclick="toggleAttendance(event, ${student.id})">
-                        <span style="font-weight:bold; color: ${isPresent ? 'var(--success)' : 'var(--text-light)'}">
-                            ${isPresent ? 'Presente' : 'Faltou'}
-                        </span>
+                        <input type="checkbox" style="width:20px; height:20px; cursor:pointer;" ${isPresent ? 'checked' : ''} onclick="toggleAttendance(event, ${student.id})">
+                        <span style="font-weight:bold; color: ${isPresent ? 'var(--success)' : 'var(--text-light)'}">${isPresent ? 'Presente' : 'Faltou'}</span>
                     </div>
                 </td>
-                <td>
-                    <button class="btn-attendance" onclick="openAttendanceHistoryModal(${student.id})" title="Ver Diário Completo">📅 Histórico</button>
-                </td>
+                <td><button class="btn-attendance" onclick="openAttendanceHistoryModal(${student.id})" title="Ver Diário Completo">📅 Histórico</button></td>
             `;
             tableBody.appendChild(tr);
         });
-
-        if (classState.active.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Nenhum aluno ativo para chamada.</td></tr>`;
-        }
+        if (classState.active.length === 0) tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Nenhum aluno ativo.</td></tr>`;
     }
 
     function renderFinance() {
@@ -861,31 +885,18 @@
 
             const row = document.createElement('tr');
             if (!student.paid) row.classList.add('pending-row');
-
-            let whatsappHTML = '<span style="color:var(--text-light)">Sem número</span>';
-            if (student.whatsapp) {
-                whatsappHTML = `<a class="whatsapp-link" href="https://wa.me/55${student.whatsapp}" target="_blank">💬 ${student.whatsapp}</a>`;
-            }
             
-            let daysArray = student.days || [];
-            let daysBadges = daysArray.map(d => `<span class="day-badge">${dayNames[d]}</span>`).join('');
+            let daysBadges = (student.days || []).map(d => `<span class="day-badge">${dayNames[d]}</span>`).join('');
 
             row.innerHTML = `
                 <td><strong>${student.nome}</strong></td>
                 <td><div class="days-badge-container">${daysBadges}</div></td>
-                <td class="parent-info">
-                    <div>${student.parent}</div>
-                    ${whatsappHTML}
-                </td>
+                <td>${buildContactHTML(student)}</td>
                 <td><strong>${formatCurrency(feeValue)}</strong></td>
                 <td>
                     <div style="display:flex; align-items:center; gap: 8px;">
-                        <input type="checkbox" style="width:20px; height:20px; cursor:pointer;" 
-                            ${student.paid ? 'checked' : ''} 
-                            onclick="return handlePaymentClick(event, ${student.id}, ${student.paid})">
-                        <span style="font-weight:bold; color: ${student.paid ? 'var(--success)' : 'var(--danger)'}">
-                            ${student.paid ? 'Mês Pago' : 'Pendente'}
-                        </span>
+                        <input type="checkbox" style="width:20px; height:20px; cursor:pointer;" ${student.paid ? 'checked' : ''} onclick="return handlePaymentClick(event, ${student.id}, ${student.paid})">
+                        <span style="font-weight:bold; color: ${student.paid ? 'var(--success)' : 'var(--danger)'}">${student.paid ? 'Mês Pago' : 'Pendente'}</span>
                     </div>
                 </td>
                 <td>
@@ -899,23 +910,16 @@
             tableBody.appendChild(row);
         });
 
-        if (classState.active.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Nenhum aluno ativo no momento.</td></tr>`;
-        }
+        if (classState.active.length === 0) tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Nenhum aluno ativo.</td></tr>`;
 
         let totalDespesasMes = 0;
-        const now = new Date();
-        const currentMonth = now.getMonth() + 1;
-        const currentYear = now.getFullYear();
-
+        const now = new Date(); const currentMonth = now.getMonth() + 1; const currentYear = now.getFullYear();
         const expenseTableBody = document.getElementById('expenses-table-body');
         expenseTableBody.innerHTML = '';
         
         classState.despesas.forEach(exp => {
             const [ano, mes, dia] = exp.data_despesa.split('-');
-            if (parseInt(mes) === currentMonth && parseInt(ano) === currentYear) {
-                totalDespesasMes += Number(exp.valor);
-            }
+            if (parseInt(mes) === currentMonth && parseInt(ano) === currentYear) totalDespesasMes += Number(exp.valor);
             
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -926,10 +930,7 @@
             `;
             expenseTableBody.appendChild(tr);
         });
-
-        if (classState.despesas.length === 0) {
-            expenseTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Nenhuma despesa registrada.</td></tr>`;
-        }
+        if (classState.despesas.length === 0) expenseTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Nenhuma despesa registrada.</td></tr>`;
 
         const saldoLiquido = totals.received - totalDespesasMes;
         document.getElementById('fin-total').innerText = formatCurrency(totals.expected);
@@ -937,15 +938,10 @@
         document.getElementById('fin-pending').innerText = formatCurrency(totals.pending);
         document.getElementById('fin-despesas').innerText = formatCurrency(totalDespesasMes);
         
-        const saldoEl = document.getElementById('fin-saldo');
-        const cardSaldo = document.getElementById('card-saldo');
+        const saldoEl = document.getElementById('fin-saldo'); const cardSaldo = document.getElementById('card-saldo');
         saldoEl.innerText = formatCurrency(saldoLiquido);
-
-        if (saldoLiquido >= 0) {
-            saldoEl.style.color = 'var(--success)'; cardSaldo.style.borderLeftColor = 'var(--success)';
-        } else {
-            saldoEl.style.color = 'var(--danger)'; cardSaldo.style.borderLeftColor = 'var(--danger)';
-        }
+        if (saldoLiquido >= 0) { saldoEl.style.color = 'var(--success)'; cardSaldo.style.borderLeftColor = 'var(--success)'; } 
+        else { saldoEl.style.color = 'var(--danger)'; cardSaldo.style.borderLeftColor = 'var(--danger)'; }
     }
 
     function renderHistory() {
@@ -954,18 +950,11 @@
 
         classState.inactive.forEach(student => {
             const row = document.createElement('tr');
-            let whatsappHTML = '<span style="color:var(--text-light)">Sem número</span>';
-            if (student.whatsapp) {
-                whatsappHTML = `<a class="whatsapp-link" href="https://wa.me/55${student.whatsapp}" target="_blank">💬 ${student.whatsapp}</a>`;
-            }
-
-            const statusPagamento = student.paid 
-                ? '<span style="color: var(--success); font-weight: bold;">Tudo Quitado</span>'
-                : '<span style="color: var(--danger); font-weight: bold;">Deixou Pendência</span>';
+            const statusPagamento = student.paid ? '<span style="color: var(--success); font-weight: bold;">Tudo Quitado</span>' : '<span style="color: var(--danger); font-weight: bold;">Deixou Pendência</span>';
 
             row.innerHTML = `
                 <td><strong>${student.nome}</strong></td>
-                <td class="parent-info"><div>${student.parent}</div>${whatsappHTML}</td>
+                <td>${buildContactHTML(student)}</td>
                 <td>${formatCurrency(student.fee)}</td>
                 <td>${statusPagamento}</td>
                 <td style="color: var(--danger); font-style: italic;">"${student.motivo_exclusao || 'Não informado'}"</td>
@@ -974,14 +963,10 @@
             tableBody.appendChild(row);
         });
 
-        if (classState.inactive.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Nenhum aluno foi excluído ainda.</td></tr>`;
-        }
+        if (classState.inactive.length === 0) tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Nenhum aluno foi excluído ainda.</td></tr>`;
     }
 
-    // 6. START
     checkSession();
-
 </script>
 </body>
 </html>
