@@ -127,7 +127,7 @@
         .btn-wa:hover { background: #C8E6C9; }
         .btn-wa-falta { background: #FFF3E0; color: #F57F17; border-color: #FFECB3; }
         .btn-wa-falta:hover { background: #FFECB3; }
-        .btn-receipt { background: var(--primary); color: white; border: none; padding: 4px 10px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 700; box-shadow: 0 2px 4px rgba(126,87,194,0.3); }
+        .btn-receipt { background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 700; box-shadow: 0 2px 4px rgba(126,87,194,0.3); }
         .btn-receipt:hover { background: var(--primary-hover); }
 
         .days-badge-container { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -309,12 +309,12 @@
             </div>
         </div>
 
-        <!-- NOVA ABA: LEMBRETES (POST-ITS) -->
+        <!-- ABA LEMBRETES (POST-ITS) -->
         <div id="tab-tarefas" class="tab-content">
             <div class="controls">
                 <h2 style="margin-bottom: 15px; color: var(--primary);">Meus Lembretes</h2>
                 <div class="inputs-row">
-                    <input type="text" id="task-text" class="w-full-mobile" placeholder="O que você não pode esquecer? (Ex: Semana de provas do Joãozinho)" autocomplete="off">
+                    <input type="text" id="task-text" class="w-full-mobile" placeholder="O que você não pode esquecer? (Ex: Comprar tinta de impressora amanhã)" autocomplete="off">
                     <button class="btn-add" style="max-width: 200px;" onclick="addTask()">Colar Lembrete</button>
                 </div>
             </div>
@@ -495,7 +495,7 @@
         document.getElementById('main-app').style.display = 'block';
     }
 
-    // 3. COMUNICAÇÃO COM O BANCO E REGRAS DE NEGÓCIO
+    // 3. COMUNICAÇÃO COM O BANCO
     async function fetchData() {
         const { data: alunosData, error: alunosError } = await db.from('alunos').select('*').order('nome', { ascending: true });
         const { data: despesasData } = await db.from('despesas').select('*').order('data_despesa', { ascending: false });
@@ -529,7 +529,7 @@
         classState.tarefas = tarefasData || [];
         classState.planos = planosData || [];
 
-        dateChangedHandler(); // Atualiza o tema da aula baseado na data do input
+        dateChangedHandler(); 
         renderDaysAndSummary();
         renderFinance();
         renderHistory();
@@ -578,7 +578,7 @@
         if(confirm(`Remover ${student.nome} da aula de ${dayNames[day]}?`)) {
             const updatedDays = student.days.filter(d => d !== day);
             if (updatedDays.length === 0) {
-                alert("O aluno ficará sem dias na semana. Para excluí-lo totalmente, vá no Controle Financeiro e clique na lixeira.");
+                alert("O aluno ficará sem dias na semana. Vá no Controle Financeiro e clique na lixeira para excluir o aluno.");
             } else {
                 await db.from('alunos').update({ days: updatedDays }).eq('id', studentId);
                 fetchData();
@@ -629,20 +629,22 @@
         else { alert("Erro ao salvar presença."); event.preventDefault(); }
     }
 
-    // --- BUG FIX: ESTORNO DE PAGAMENTO ---
+    // --- PAGAMENTOS E ESTORNO CORRIGIDO ---
     function handlePaymentClick(event, studentId, isCurrentlyPaid) {
         event.preventDefault(); 
         if (isCurrentlyPaid) {
-            if (confirm("Deseja desmarcar o pagamento deste aluno para o mês atual? O histórico também será corrigido.")) {
+            if (confirm("Deseja estornar (desmarcar) o pagamento deste aluno no mês atual? O registro também será apagado do histórico.")) {
                 const student = classState.active.find(s => s.id === studentId);
                 let historico = student.historico_pagamentos || [];
                 
-                // Remove o registro do histórico que tem a mesma data do pagamento atual
-                if(student.data_ultimo_pagamento) {
-                    historico = historico.filter(p => p.data !== student.data_ultimo_pagamento);
+                // Pega a data do ultimo pagamento que está na tela
+                const dataParaApagar = student.data_ultimo_pagamento; 
+                
+                // Filtra o histórico apagando APENAS o registro dessa data específica
+                if(dataParaApagar) {
+                    historico = historico.filter(p => p.data !== dataParaApagar);
                 } else {
-                    // Fallback se não tiver data marcada, tira o ultimo
-                    historico.pop(); 
+                    historico.pop(); // Fallback de segurança se não houver data
                 }
 
                 db.from('alunos').update({ 
@@ -750,9 +752,10 @@
         if(!student) return;
 
         const now = new Date();
+        // Correção de variável que causou o bug anterior da página em branco
+        const currentYear = now.getFullYear(); 
         const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         const mesExtenso = meses[now.getMonth()];
-        const respName = student.parent && student.parent !== 'Não Informado' ? student.parent : (student.parent_2 || 'Responsável');
 
         const win = window.open('', '_blank');
         win.document.write(`
@@ -789,17 +792,14 @@
                         <div><strong>Aluno(a):</strong> ${student.nome}</div>
                         <div><strong>Mês:</strong> ${mesExtenso} / ${currentYear}</div>
                     </div>
-                    
                     <div class="content-box">
                         <h3>Frequência Escolar</h3>
                         <p style="font-size: 18px; margin:0;">O(A) aluno(a) obteve <strong>${presencasNoMes} presenças</strong> registradas neste mês de referência.</p>
                     </div>
-
                     <div class="content-box">
                         <h3>Anotações da Professora e Evolução</h3>
                         <div class="notes">${notes || 'Nenhuma anotação extra registrada para este mês.'}</div>
                     </div>
-
                     <div class="footer">
                         <div class="assinatura">Assinatura da Professora</div>
                         <div class="data">Campo Grande - MS, gerado em ${now.toLocaleDateString('pt-BR')}</div>
@@ -812,43 +812,12 @@
         closeModal('boletim-modal');
     }
 
-    // --- RESTANTE DO CÓDIGO (Edição, Exclusão, Despesas, Histórico) ---
-    function openViewHistoryModal(studentId) {
-        const student = classState.active.find(s => s.id === studentId);
-        if (!student) return;
-
-        document.getElementById('view-history-student-name').innerText = `Aluno: ${student.nome}`;
-        const tbody = document.getElementById('view-history-table-body');
-        tbody.innerHTML = '';
-
-        const historico = student.historico_pagamentos || [];
-        if (historico.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhum pagamento registrado ainda.</td></tr>';
-        } else {
-            const historicoOrdenado = [...historico].sort((a, b) => new Date(b.data) - new Date(a.data));
-            historicoOrdenado.forEach(pag => {
-                const tr = document.createElement('tr');
-                const [ano, mes, dia] = pag.data.split('-');
-                const statusColor = pag.status === 'Pontual' ? 'var(--success)' : 'var(--danger)';
-                const respName = student.parent && student.parent !== 'Não Informado' ? student.parent : (student.parent_2 || 'Responsável');
-                
-                tr.innerHTML = `
-                    <td><strong>${dia}/${mes}/${ano}</strong></td>
-                    <td>${formatCurrency(pag.valor)}</td>
-                    <td style="color: ${statusColor}; font-weight: bold; text-transform: uppercase; font-size: 0.85rem;">${pag.status}</td>
-                    <td><button class="btn-receipt" onclick="gerarRecibo('${student.nome}', '${respName}', ${pag.valor}, '${pag.data}')">🖨️ Imprimir</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-        document.getElementById('view-history-modal').classList.add('active');
-    }
-
+    // --- FUNÇÕES GERAIS ---
     function enviarMensagemWp(tipo, fone, responsavel, aluno, valor) {
-        if(!fone) return alert("Este contato não tem número registrado.");
+        if(!fone) return alert("Contato sem número registrado.");
         let msg = "";
         const respName = responsavel || 'Responsável';
-        if (tipo === 'cobrar') msg = `Olá, ${respName}, tudo bem? Passando para lembrar da mensalidade das aulas de reforço do(a) ${aluno} no valor de ${formatCurrency(valor)}.`;
+        if (tipo === 'cobrar') msg = `Olá, ${respName}, tudo bem? Passando para lembrar da mensalidade do(a) ${aluno} no valor de ${formatCurrency(valor)}.`;
         else if (tipo === 'falta') msg = `Olá, ${respName}, tudo bem? Notamos a ausência do(a) ${aluno} na aula de hoje. Está tudo bem com ele(a)?`;
         window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(msg)}`, '_blank');
     }
@@ -910,6 +879,34 @@
         document.getElementById('view-attendance-modal').classList.add('active');
     }
 
+    function openViewHistoryModal(studentId) {
+        const student = classState.active.find(s => s.id === studentId);
+        if (!student) return;
+        document.getElementById('view-history-student-name').innerText = `Aluno: ${student.nome}`;
+        const tbody = document.getElementById('view-history-table-body');
+        tbody.innerHTML = '';
+        const historico = student.historico_pagamentos || [];
+        if (historico.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhum pagamento registrado ainda.</td></tr>';
+        } else {
+            const historicoOrdenado = [...historico].sort((a, b) => new Date(b.data) - new Date(a.data));
+            historicoOrdenado.forEach(pag => {
+                const tr = document.createElement('tr');
+                const [ano, mes, dia] = pag.data.split('-');
+                const statusColor = pag.status === 'Pontual' ? 'var(--success)' : 'var(--danger)';
+                const respName = student.parent && student.parent !== 'Não Informado' ? student.parent : (student.parent_2 || 'Responsável');
+                tr.innerHTML = `
+                    <td><strong>${dia}/${mes}/${ano}</strong></td>
+                    <td>${formatCurrency(pag.valor)}</td>
+                    <td style="color: ${statusColor}; font-weight: bold; text-transform: uppercase; font-size: 0.85rem;">${pag.status}</td>
+                    <td><button class="btn-receipt" onclick="gerarRecibo('${student.nome}', '${respName}', ${pag.valor}, '${pag.data}')">🖨️ Imprimir</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        document.getElementById('view-history-modal').classList.add('active');
+    }
+
     function openEditModal(studentId) {
         const student = classState.active.find(s => s.id === studentId);
         if (!student) return;
@@ -929,7 +926,6 @@
         const parent_2 = document.getElementById('edit-parent-2').value.trim();
         const whatsapp_2 = document.getElementById('edit-whatsapp-2').value.replace(/\D/g, '');
         const fee = parseFloat(document.getElementById('edit-fee').value);
-
         if (isNaN(fee) || fee < 0) return alert('Insira um valor válido.');
         await db.from('alunos').update({ parent, whatsapp, parent_2, whatsapp_2, fee }).eq('id', id);
         closeModal('edit-modal'); fetchData();
@@ -962,7 +958,7 @@
         const desc = document.getElementById('expense-desc').value.trim();
         const val = parseFloat(document.getElementById('expense-value').value);
         const date = document.getElementById('expense-date').value;
-        if (!desc || isNaN(val) || !date) return alert('Preencha todos os campos da despesa.');
+        if (!desc || isNaN(val) || !date) return alert('Preencha todos os campos.');
         await db.from('despesas').insert([{ descricao: desc, valor: val, data_despesa: date }]);
         document.getElementById('expense-desc').value = '';
         document.getElementById('expense-value').value = '';
@@ -1001,9 +997,7 @@
                     <button class="btn-wa btn-wa-falta" onclick="enviarMensagemWp('falta', '${student.whatsapp}', '${p1Name}', '${student.nome}', 0)" title="Aviso de Falta">⚠️</button>
                 </div>
             </div>`;
-        } else {
-            html += `<div class="parent-info" style="margin-bottom:8px;"><div>${student.parent || 'Não Informado'}</div><span style="color:var(--text-light)">Sem número</span></div>`;
-        }
+        } else html += `<div class="parent-info" style="margin-bottom:8px;"><div>${student.parent || 'Não Informado'}</div><span style="color:var(--text-light)">Sem número</span></div>`;
 
         if (student.parent_2 || student.whatsapp_2) {
             const p2Name = student.parent_2 || 'Resp. 2';
@@ -1021,7 +1015,7 @@
         return html;
     }
 
-    // --- RENDERS ---
+    // --- RENDERIZAÇÃO DAS TELAS ---
     function renderDaysAndSummary() {
         const days = ['terca', 'quarta', 'quinta'];
         let totalOccupiedSlots = 0;
@@ -1171,7 +1165,9 @@
         if (classState.inactive.length === 0) tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Nenhum aluno foi excluído ainda.</td></tr>`;
     }
 
+    // 6. START
     checkSession();
+
 </script>
 </body>
 </html>
