@@ -495,7 +495,7 @@
         document.getElementById('main-app').style.display = 'block';
     }
 
-    // 3. COMUNICAÇÃO COM O BANCO
+    // 3. COMUNICAÇÃO COM O BANCO E REGRAS DE NEGÓCIO
     async function fetchData() {
         const { data: alunosData, error: alunosError } = await db.from('alunos').select('*').order('nome', { ascending: true });
         const { data: despesasData } = await db.from('despesas').select('*').order('data_despesa', { ascending: false });
@@ -637,14 +637,12 @@
                 const student = classState.active.find(s => s.id === studentId);
                 let historico = student.historico_pagamentos || [];
                 
-                // Pega a data do ultimo pagamento que está na tela
                 const dataParaApagar = student.data_ultimo_pagamento; 
                 
-                // Filtra o histórico apagando APENAS o registro dessa data específica
                 if(dataParaApagar) {
                     historico = historico.filter(p => p.data !== dataParaApagar);
                 } else {
-                    historico.pop(); // Fallback de segurança se não houver data
+                    historico.pop(); 
                 }
 
                 db.from('alunos').update({ 
@@ -720,7 +718,52 @@
         }
     }
 
-    // --- BOLETIM DE REFORÇO ---
+    // --- FUNÇÕES GERAIS ---
+    function enviarMensagemWp(tipo, fone, responsavel, aluno, valor) {
+        if(!fone) return alert("Contato sem número registrado.");
+        let msg = "";
+        const respName = responsavel || 'Responsável';
+        if (tipo === 'cobrar') msg = `Olá, ${respName}, tudo bem? Passando para lembrar da mensalidade em aberto do(a) ${aluno}, pode nos enviar o comprovante para realizarmos a baixa do financeiro?`;
+        else if (tipo === 'falta') msg = `Olá, ${respName}, tudo bem? Notamos a ausência do(a) ${aluno} na aula de hoje. Está tudo bem com ele(a)?`;
+        window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function gerarRecibo(aluno, responsavel, valor, dataStr) {
+        const [ano, mes, dia] = dataStr.split('-');
+        const win = window.open('', '_blank');
+        win.document.write(`
+            <html>
+            <head>
+                <title>Recibo - ${aluno}</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap');
+                    body { font-family: 'Nunito', sans-serif; padding: 40px; color: #333; }
+                    .recibo { border: 2px solid #7E57C2; border-radius: 15px; padding: 40px; max-width: 650px; margin: 0 auto; text-align: center; }
+                    .recibo h1 { color: #7E57C2; margin-bottom: 5px; font-weight: 800; font-size: 28px; }
+                    .recibo h2 { color: #FF7043; margin-top: 0; font-size: 20px; letter-spacing: 2px; }
+                    .conteudo { font-size: 18px; text-align: justify; line-height: 1.8; margin-top: 40px; }
+                    .data { font-size: 18px; margin-top: 40px; text-align: right; }
+                    .assinatura { margin-top: 80px; border-top: 1px solid #333; width: 60%; margin-left: auto; margin-right: auto; padding-top: 10px; font-weight: bold; }
+                    @media print { .btn-print { display: none; } }
+                </style>
+            </head>
+            <body>
+                <div style="text-align:center; margin-bottom: 20px;">
+                    <button class="btn-print" onclick="window.print()" style="background:#7E57C2; color:white; padding:10px 20px; border:none; border-radius:8px; font-size:16px; cursor:pointer; font-weight:bold;">🖨️ Imprimir / Salvar PDF</button>
+                </div>
+                <div class="recibo">
+                    <h1>Reforço Super Baixinhos</h1>
+                    <h2>RECIBO DE PAGAMENTO</h2>
+                    <div class="conteudo">Recebi de <strong>${responsavel}</strong> a quantia de <strong>${formatCurrency(valor)}</strong> referente à mensalidade das aulas de reforço escolar do(a) aluno(a) <strong>${aluno}</strong>.</div>
+                    <div class="data">Campo Grande - MS, ${dia}/${mes}/${ano}.</div>
+                    <div class="assinatura">Assinatura da Professora</div>
+                </div>
+            </body>
+            </html>
+        `);
+        win.document.close();
+    }
+
     function abrirModalBoletim(studentId) {
         const student = classState.active.find(s => s.id === studentId);
         if(!student) return;
@@ -752,10 +795,9 @@
         if(!student) return;
 
         const now = new Date();
-        // Correção de variável que causou o bug anterior da página em branco
-        const currentYear = now.getFullYear(); 
         const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         const mesExtenso = meses[now.getMonth()];
+        const currentYear = now.getFullYear();
 
         const win = window.open('', '_blank');
         win.document.write(`
@@ -810,52 +852,6 @@
         `);
         win.document.close();
         closeModal('boletim-modal');
-    }
-
-    // --- FUNÇÕES GERAIS ---
-    function enviarMensagemWp(tipo, fone, responsavel, aluno, valor) {
-        if(!fone) return alert("Contato sem número registrado.");
-        let msg = "";
-        const respName = responsavel || 'Responsável';
-        if (tipo === 'cobrar') msg = `Olá, ${respName}, tudo bem? Passando para lembrar da mensalidade do(a) ${aluno} no valor de ${formatCurrency(valor)}.`;
-        else if (tipo === 'falta') msg = `Olá, ${respName}, tudo bem? Notamos a ausência do(a) ${aluno} na aula de hoje. Está tudo bem com ele(a)?`;
-        window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(msg)}`, '_blank');
-    }
-
-    function gerarRecibo(aluno, responsavel, valor, dataStr) {
-        const [ano, mes, dia] = dataStr.split('-');
-        const win = window.open('', '_blank');
-        win.document.write(`
-            <html>
-            <head>
-                <title>Recibo - ${aluno}</title>
-                <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap');
-                    body { font-family: 'Nunito', sans-serif; padding: 40px; color: #333; }
-                    .recibo { border: 2px solid #7E57C2; border-radius: 15px; padding: 40px; max-width: 650px; margin: 0 auto; text-align: center; }
-                    .recibo h1 { color: #7E57C2; margin-bottom: 5px; font-weight: 800; font-size: 28px; }
-                    .recibo h2 { color: #FF7043; margin-top: 0; font-size: 20px; letter-spacing: 2px; }
-                    .conteudo { font-size: 18px; text-align: justify; line-height: 1.8; margin-top: 40px; }
-                    .data { font-size: 18px; margin-top: 40px; text-align: right; }
-                    .assinatura { margin-top: 80px; border-top: 1px solid #333; width: 60%; margin-left: auto; margin-right: auto; padding-top: 10px; font-weight: bold; }
-                    @media print { .btn-print { display: none; } }
-                </style>
-            </head>
-            <body>
-                <div style="text-align:center; margin-bottom: 20px;">
-                    <button class="btn-print" onclick="window.print()" style="background:#7E57C2; color:white; padding:10px 20px; border:none; border-radius:8px; font-size:16px; cursor:pointer; font-weight:bold;">🖨️ Imprimir / Salvar PDF</button>
-                </div>
-                <div class="recibo">
-                    <h1>Reforço Super Baixinhos</h1>
-                    <h2>RECIBO DE PAGAMENTO</h2>
-                    <div class="conteudo">Recebi de <strong>${responsavel}</strong> a quantia de <strong>${formatCurrency(valor)}</strong> referente à mensalidade das aulas de reforço escolar do(a) aluno(a) <strong>${aluno}</strong>.</div>
-                    <div class="data">Campo Grande - MS, ${dia}/${mes}/${ano}.</div>
-                    <div class="assinatura">Assinatura da Professora</div>
-                </div>
-            </body>
-            </html>
-        `);
-        win.document.close();
     }
 
     function openAttendanceHistoryModal(studentId) {
