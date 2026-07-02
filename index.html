@@ -127,7 +127,7 @@
         .btn-wa:hover { background: #C8E6C9; }
         .btn-wa-falta { background: #FFF3E0; color: #F57F17; border-color: #FFECB3; }
         .btn-wa-falta:hover { background: #FFECB3; }
-        .btn-receipt { background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 700; box-shadow: 0 2px 4px rgba(126,87,194,0.3); }
+        .btn-receipt { background: var(--primary); color: white; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 700; box-shadow: 0 2px 4px rgba(126,87,194,0.3); }
         .btn-receipt:hover { background: var(--primary-hover); }
 
         .days-badge-container { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -629,7 +629,7 @@
         else { alert("Erro ao salvar presença."); event.preventDefault(); }
     }
 
-    // --- PAGAMENTOS E ESTORNO CORRIGIDO ---
+    // --- PAGAMENTOS E LÓGICA DE ESTORNO DE PRECISÃO ---
     function handlePaymentClick(event, studentId, isCurrentlyPaid) {
         event.preventDefault(); 
         if (isCurrentlyPaid) {
@@ -637,17 +637,19 @@
                 const student = classState.active.find(s => s.id === studentId);
                 let historico = student.historico_pagamentos || [];
                 
-                const dataParaApagar = student.data_ultimo_pagamento; 
-                
-                if(dataParaApagar) {
-                    historico = historico.filter(p => p.data !== dataParaApagar);
-                } else {
-                    historico.pop(); 
+                // Apaga APENAS o último pagamento adicionado, resolvendo o bug das duplicações antigas.
+                if (historico.length > 0) {
+                    historico.pop();
+                }
+
+                let newDataUltimo = null;
+                if (historico.length > 0) {
+                    newDataUltimo = historico[historico.length - 1].data;
                 }
 
                 db.from('alunos').update({ 
                     paid: false, 
-                    data_ultimo_pagamento: null,
+                    data_ultimo_pagamento: newDataUltimo,
                     historico_pagamentos: historico
                 }).eq('id', studentId).then(() => fetchData());
             }
@@ -678,6 +680,45 @@
 
         if (error) return alert("Erro ao salvar o pagamento.");
         closeModal('payment-modal'); fetchData();
+    }
+
+    // --- LIXEIRA MANUAL DO RELATÓRIO DE PAGAMENTOS ---
+    async function apagarPagamentoHistorico(studentId, index) {
+        if(confirm("Tem certeza que deseja apagar este pagamento permanentemente do histórico?")) {
+            const student = classState.active.find(s => s.id === studentId);
+            let historico = student.historico_pagamentos || [];
+            
+            // Remove exatamente o item da posição clicada
+            historico.splice(index, 1);
+
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+            let hasPaymentThisMonth = false;
+            let newDataUltimo = null;
+
+            if (historico.length > 0) {
+                const lastPag = historico[historico.length - 1];
+                newDataUltimo = lastPag.data;
+                const [ano, mes] = lastPag.data.split('-');
+                if (parseInt(mes) === currentMonth && parseInt(ano) === currentYear) {
+                    hasPaymentThisMonth = true;
+                }
+            }
+
+            const { error } = await db.from('alunos').update({
+                historico_pagamentos: historico,
+                paid: hasPaymentThisMonth,
+                data_ultimo_pagamento: newDataUltimo
+            }).eq('id', studentId);
+
+            if (!error) {
+                closeModal('view-history-modal');
+                fetchData();
+            } else {
+                alert("Erro ao apagar pagamento.");
+            }
+        }
     }
 
     // --- TAREFAS (POST-ITS) ---
@@ -885,7 +926,10 @@
         if (historico.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhum pagamento registrado ainda.</td></tr>';
         } else {
-            const historicoOrdenado = [...historico].sort((a, b) => new Date(b.data) - new Date(a.data));
+            // Mapeando com o index original para podermos deletar o correto do banco
+            const historicoComIndex = historico.map((pag, index) => ({...pag, originalIndex: index}));
+            const historicoOrdenado = historicoComIndex.sort((a, b) => new Date(b.data) - new Date(a.data));
+            
             historicoOrdenado.forEach(pag => {
                 const tr = document.createElement('tr');
                 const [ano, mes, dia] = pag.data.split('-');
@@ -895,7 +939,12 @@
                     <td><strong>${dia}/${mes}/${ano}</strong></td>
                     <td>${formatCurrency(pag.valor)}</td>
                     <td style="color: ${statusColor}; font-weight: bold; text-transform: uppercase; font-size: 0.85rem;">${pag.status}</td>
-                    <td><button class="btn-receipt" onclick="gerarRecibo('${student.nome}', '${respName}', ${pag.valor}, '${pag.data}')">🖨️ Imprimir</button></td>
+                    <td>
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn-receipt" onclick="gerarRecibo('${student.nome}', '${respName}', ${pag.valor}, '${pag.data}')" title="Imprimir Recibo">🖨️ Recibo</button>
+                            <button class="btn-delete" style="padding: 4px 8px; font-size: 0.8rem;" onclick="apagarPagamentoHistorico(${student.id}, ${pag.originalIndex})" title="Apagar Pagamento Definitivamente">🗑️</button>
+                        </div>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
