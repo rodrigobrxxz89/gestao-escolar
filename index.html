@@ -1,3 +1,12 @@
+Perfeito! Essa é uma melhoria cirúrgica. Adicionar a sexta-feira vai ampliar a capacidade da sua sala de aula (de 18 para 24 vagas semanais) e o novo botão vai automatizar mais um trabalho chato de digitação.
+
+Para que a mensagem fique inteligente, eu programei o botão (que tem o ícone de bilhete 🎫) para **calcular automaticamente a data de amanhã** (o primeiro X) e abrir uma janelinha perguntando para você: *"Para qual data será a reposição?"* (o segundo X). Assim, o texto vai para o WhatsApp perfeitamente preenchido.
+
+Mantive todas as cores, fontes e lógicas do banco de dados exatamente iguais.
+
+Substitua todo o seu arquivo `index.html` por esta versão:
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -127,6 +136,9 @@
         .btn-wa:hover { background: #C8E6C9; }
         .btn-wa-falta { background: #FFF3E0; color: #F57F17; border-color: #FFECB3; }
         .btn-wa-falta:hover { background: #FFECB3; }
+        .btn-wa-aviso { background: #E3F2FD; color: #0277BD; border-color: #B3E5FC; }
+        .btn-wa-aviso:hover { background: #B3E5FC; }
+        
         .btn-receipt { background: var(--primary); color: white; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 700; box-shadow: 0 2px 4px rgba(126,87,194,0.3); }
         .btn-receipt:hover { background: var(--primary-hover); }
 
@@ -227,6 +239,7 @@
                 <label><input type="checkbox" value="terca" class="day-cb"> Terça</label>
                 <label><input type="checkbox" value="quarta" class="day-cb"> Quarta</label>
                 <label><input type="checkbox" value="quinta" class="day-cb"> Quinta</label>
+                <label><input type="checkbox" value="sexta" class="day-cb"> Sexta</label>
                 <button class="btn-add" onclick="addStudent()">Matricular Aluno</button>
             </div>
         </div>
@@ -234,14 +247,15 @@
         <!-- ABA SALA DE AULA -->
         <div id="tab-sala" class="tab-content active">
             <div class="dashboard-grid">
-                <div class="dash-card total"><h3>Capacidade Total (Semana)</h3><p>18 Vagas</p></div>
+                <div class="dash-card total"><h3>Capacidade Total (Semana)</h3><p>24 Vagas</p></div>
                 <div class="dash-card info"><h3>Alunos Únicos Matriculados</h3><p id="class-unique-students">0</p></div>
-                <div class="dash-card warning"><h3>Vagas Livres na Semana</h3><p id="class-free-slots">18</p></div>
+                <div class="dash-card warning"><h3>Vagas Livres na Semana</h3><p id="class-free-slots">24</p></div>
             </div>
             <div class="week-grid">
                 <div class="day-card" id="card-terca"></div>
                 <div class="day-card" id="card-quarta"></div>
                 <div class="day-card" id="card-quinta"></div>
+                <div class="day-card" id="card-sexta"></div>
             </div>
         </div>
 
@@ -448,8 +462,8 @@
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const MAX_DESKS = 6;
-    const TOTAL_CAPACITY = MAX_DESKS * 3;
-    const dayNames = { 'terca': 'Terça', 'quarta': 'Quarta', 'quinta': 'Quinta' };
+    const TOTAL_CAPACITY = MAX_DESKS * 4; // Terça a Sexta
+    const dayNames = { 'terca': 'Terça', 'quarta': 'Quarta', 'quinta': 'Quinta', 'sexta': 'Sexta' };
 
     let classState = { active: [], inactive: [], despesas: [], tarefas: [], planos: [] };
 
@@ -637,7 +651,6 @@
                 const student = classState.active.find(s => s.id === studentId);
                 let historico = student.historico_pagamentos || [];
                 
-                // Apaga APENAS o último pagamento adicionado, resolvendo o bug das duplicações antigas.
                 if (historico.length > 0) {
                     historico.pop();
                 }
@@ -682,13 +695,11 @@
         closeModal('payment-modal'); fetchData();
     }
 
-    // --- LIXEIRA MANUAL DO RELATÓRIO DE PAGAMENTOS ---
     async function apagarPagamentoHistorico(studentId, index) {
         if(confirm("Tem certeza que deseja apagar este pagamento permanentemente do histórico?")) {
             const student = classState.active.find(s => s.id === studentId);
             let historico = student.historico_pagamentos || [];
             
-            // Remove exatamente o item da posição clicada
             historico.splice(index, 1);
 
             const now = new Date();
@@ -764,8 +775,20 @@
         if(!fone) return alert("Contato sem número registrado.");
         let msg = "";
         const respName = responsavel || 'Responsável';
-        if (tipo === 'cobrar') msg = `Olá, ${respName}, tudo bem? Passando para lembrar da mensalidade em aberto do(a) ${aluno}, pode nos enviar o comprovante para realizarmos a baixa do financeiro?`;
-        else if (tipo === 'falta') msg = `Olá, ${respName}, tudo bem? Notamos a ausência do(a) ${aluno} na aula de hoje. Está tudo bem com ele(a)?`;
+        if (tipo === 'cobrar') {
+            msg = `Olá, ${respName}, tudo bem? Passando para lembrar da mensalidade em aberto do(a) ${aluno}, pode nos enviar o comprovante para realizarmos a baixa do financeiro?`;
+        } else if (tipo === 'falta') {
+            msg = `Olá, ${respName}, tudo bem? Notamos a ausência do(a) ${aluno} na aula de hoje. Está tudo bem com ele(a)?`;
+        } else if (tipo === 'aviso') {
+            let amanha = new Date();
+            amanha.setDate(amanha.getDate() + 1);
+            let strAmanha = String(amanha.getDate()).padStart(2, '0') + '/' + String(amanha.getMonth() + 1).padStart(2, '0');
+            
+            let dataRep = prompt("Qual a data programada para a reposição? (ex: 20/05)");
+            if (dataRep === null) return;
+            
+            msg = `Olá, ${respName}, tudo bem? Passando para avisar que amanhã no dia ${strAmanha} não haverá aula do(a) ${aluno}, reposição programada para o dia ${dataRep}.`;
+        }
         window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
@@ -926,7 +949,6 @@
         if (historico.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhum pagamento registrado ainda.</td></tr>';
         } else {
-            // Mapeando com o index original para podermos deletar o correto do banco
             const historicoComIndex = historico.map((pag, index) => ({...pag, originalIndex: index}));
             const historicoOrdenado = historicoComIndex.sort((a, b) => new Date(b.data) - new Date(a.data));
             
@@ -1040,6 +1062,7 @@
                     <a class="whatsapp-link" href="https://wa.me/55${student.whatsapp}" target="_blank">💬 ${student.whatsapp}</a>
                     <button class="btn-wa" onclick="enviarMensagemWp('cobrar', '${student.whatsapp}', '${p1Name}', '${student.nome}', ${student.fee})" title="Cobrar Mensalidade">🔔</button>
                     <button class="btn-wa btn-wa-falta" onclick="enviarMensagemWp('falta', '${student.whatsapp}', '${p1Name}', '${student.nome}', 0)" title="Aviso de Falta">⚠️</button>
+                    <button class="btn-wa btn-wa-aviso" onclick="enviarMensagemWp('aviso', '${student.whatsapp}', '${p1Name}', '${student.nome}', 0)" title="Aviso de Feriado/Reposição">🎫</button>
                 </div>
             </div>`;
         } else html += `<div class="parent-info" style="margin-bottom:8px;"><div>${student.parent || 'Não Informado'}</div><span style="color:var(--text-light)">Sem número</span></div>`;
@@ -1053,6 +1076,7 @@
                         <a class="whatsapp-link" href="https://wa.me/55${student.whatsapp_2}" target="_blank">💬 ${student.whatsapp_2}</a>
                         <button class="btn-wa" onclick="enviarMensagemWp('cobrar', '${student.whatsapp_2}', '${p2Name}', '${student.nome}', ${student.fee})" title="Cobrar Mensalidade">🔔</button>
                         <button class="btn-wa btn-wa-falta" onclick="enviarMensagemWp('falta', '${student.whatsapp_2}', '${p2Name}', '${student.nome}', 0)" title="Aviso de Falta">⚠️</button>
+                        <button class="btn-wa btn-wa-aviso" onclick="enviarMensagemWp('aviso', '${student.whatsapp_2}', '${p2Name}', '${student.nome}', 0)" title="Aviso de Feriado/Reposição">🎫</button>
                     </div>
                 </div>`;
             } else html += `<div class="parent-info"><div>${p2Name}</div><span style="color:var(--text-light)">Sem número</span></div>`;
@@ -1062,7 +1086,7 @@
 
     // --- RENDERIZAÇÃO DAS TELAS ---
     function renderDaysAndSummary() {
-        const days = ['terca', 'quarta', 'quinta'];
+        const days = ['terca', 'quarta', 'quinta', 'sexta'];
         let totalOccupiedSlots = 0;
         days.forEach(day => {
             const container = document.getElementById(`card-${day}`);
