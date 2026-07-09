@@ -136,13 +136,15 @@
         .days-badge-container { display: flex; gap: 6px; flex-wrap: wrap; }
         .day-badge { background: #E1BEE7; color: #4A148C; font-weight: 700; font-size: 0.75rem; padding: 4px 8px; border-radius: 8px; }
         
-        .action-btns { display: flex; gap: 10px; }
+        .action-btns { display: flex; gap: 10px; flex-wrap: wrap; }
         .btn-edit { background: var(--edit); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(41, 182, 246, 0.3);}
         .btn-delete { background: var(--danger); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(239, 83, 80, 0.3);}
         .btn-restore { background: var(--restore); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(171, 71, 188, 0.3);}
         .btn-history { background: var(--history); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(38, 166, 154, 0.3);}
         .btn-attendance { background: var(--attendance); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(0, 172, 193, 0.3);}
         .btn-boletim { background: #8E24AA; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(142, 36, 170, 0.3);}
+        .btn-evolucao { background: #8D6E63; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; box-shadow: 0 2px 4px rgba(141, 110, 99, 0.3);}
+        .btn-evolucao:hover { background: #795548; }
 
         /* Post-its Virtuais */
         .postit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
@@ -421,6 +423,31 @@
         </div>
     </div>
 
+    <!-- MODAL DE HISTÓRICO DE EVOLUÇÃO -->
+    <div id="evolucao-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px;">
+            <h2>Histórico de Evolução</h2>
+            <p id="evolucao-student-name" style="color: var(--text-light); font-weight: bold; margin-bottom: 15px;"></p>
+
+            <div class="table-container" style="padding: 0; box-shadow: none; max-height: 250px; overflow-y: auto; margin-bottom: 20px;">
+                <table style="min-width: 100%; margin-top: 0;">
+                    <thead><tr><th>Data</th><th>Anotação</th><th>Ação</th></tr></thead>
+                    <tbody id="evolucao-table-body"></tbody>
+                </table>
+            </div>
+
+            <div class="modal-form">
+                <input type="hidden" id="evolucao-id">
+                <label>Nova Anotação de Evolução:</label>
+                <textarea id="evolucao-notes" rows="3" placeholder="Escreva o progresso do aluno..."></textarea>
+                <button class="btn-save" onclick="salvarEvolucao()">Adicionar ao Histórico</button>
+            </div>
+            <div class="modal-actions" style="margin-top: 10px;">
+                <button class="btn-cancel" style="width: 100%" onclick="closeModal('evolucao-modal')">Fechar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DO BOLETIM DE REFORÇO -->
     <div id="boletim-modal" class="modal-overlay">
         <div class="modal-content">
@@ -429,11 +456,11 @@
             <div class="modal-form">
                 <input type="hidden" id="boletim-id">
                 <div style="background: #F3E5F5; padding: 10px; border-radius: 8px;">
-                    <strong style="color: var(--primary);">Presenças neste mês:</strong> <span id="boletim-presencas">0</span>
+                    <strong style="color: var(--primary);">Presenças no mês passado:</strong> <span id="boletim-presencas">0</span>
                 </div>
                 <div>
-                    <label>Anotações e Evolução do Aluno (Mês Atual):</label>
-                    <textarea id="boletim-notes" rows="4" placeholder="Escreva aqui os pontos fortes, dificuldades trabalhadas e progresso do aluno..."></textarea>
+                    <label>Anotações Adicionais para os Pais (Opcional):</label>
+                    <textarea id="boletim-notes" rows="4" placeholder="Escreva aqui recados ou anotações específicas que deseja que saiam neste PDF..."></textarea>
                 </div>
                 <div class="modal-actions">
                     <button class="btn-cancel" onclick="closeModal('boletim-modal')">Cancelar</button>
@@ -562,7 +589,8 @@
 
         const newStudent = { 
             nome: name, parent: parent, whatsapp: whatsapp, parent_2: parent2, whatsapp_2: whatsapp2,
-            fee: fee, paid: false, days: selectedDays, status: 'ativo', historico_pagamentos: [], historico_presencas: [] 
+            fee: fee, paid: false, days: selectedDays, status: 'ativo', 
+            historico_pagamentos: [], historico_presencas: [], historico_evolucao: [] 
         };
         const { error } = await db.from('alunos').insert([newStudent]);
         if (error) return alert('Erro ao salvar o aluno.');
@@ -634,7 +662,78 @@
         else { alert("Erro ao salvar presença."); event.preventDefault(); }
     }
 
-    // --- PAGAMENTOS E LÓGICA DE ESTORNO DE PRECISÃO ---
+    // --- CONTROLE DE EVOLUÇÃO (NOVO) ---
+    function abrirModalEvolucao(studentId) {
+        const student = classState.active.find(s => s.id === studentId);
+        if(!student) return;
+        document.getElementById('evolucao-id').value = student.id;
+        document.getElementById('evolucao-student-name').innerText = `Aluno: ${student.nome}`;
+        document.getElementById('evolucao-notes').value = '';
+        renderTabelaEvolucao(student);
+        document.getElementById('evolucao-modal').classList.add('active');
+    }
+
+    function renderTabelaEvolucao(student) {
+        const tbody = document.getElementById('evolucao-table-body');
+        tbody.innerHTML = '';
+        const evolucoes = student.historico_evolucao || [];
+        if(evolucoes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhuma anotação de evolução registrada.</td></tr>';
+        } else {
+            const evComIndex = evolucoes.map((ev, i) => ({...ev, originalIndex: i}));
+            const evOrdenadas = evComIndex.sort((a, b) => new Date(b.data) - new Date(a.data));
+            
+            evOrdenadas.forEach(ev => {
+                const tr = document.createElement('tr');
+                const [ano, mes, dia] = ev.data.split('-');
+                tr.innerHTML = `
+                    <td style="white-space: nowrap;"><strong>${dia}/${mes}/${ano}</strong></td>
+                    <td style="white-space: pre-wrap; font-size: 0.9rem;">${ev.texto}</td>
+                    <td><button class="btn-delete" style="padding: 4px 8px; font-size: 0.8rem;" onclick="apagarEvolucao(${student.id}, ${ev.originalIndex})" title="Apagar">🗑️</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    }
+
+    async function salvarEvolucao() {
+        const id = parseInt(document.getElementById('evolucao-id').value);
+        const texto = document.getElementById('evolucao-notes').value.trim();
+        if(!texto) return alert("Escreva algo para salvar.");
+        
+        const student = classState.active.find(s => s.id === id);
+        if(!student) return;
+
+        let evolucoes = student.historico_evolucao || [];
+        const hoje = new Date().toISOString().split('T')[0];
+        
+        evolucoes.push({ data: hoje, texto: texto });
+        
+        const { error } = await db.from('alunos').update({ historico_evolucao: evolucoes }).eq('id', id);
+        if(!error) {
+            student.historico_evolucao = evolucoes;
+            document.getElementById('evolucao-notes').value = '';
+            renderTabelaEvolucao(student);
+        } else {
+            alert("Erro ao salvar evolução.");
+        }
+    }
+
+    async function apagarEvolucao(studentId, index) {
+        if(confirm("Tem certeza que deseja apagar esta anotação?")) {
+            const student = classState.active.find(s => s.id === studentId);
+            let evolucoes = student.historico_evolucao || [];
+            evolucoes.splice(index, 1);
+            const { error } = await db.from('alunos').update({ historico_evolucao: evolucoes }).eq('id', studentId);
+            if(!error) {
+                renderTabelaEvolucao(student);
+            } else {
+                alert("Erro ao apagar anotação.");
+            }
+        }
+    }
+
+    // --- PAGAMENTOS E LÓGICA DE ESTORNO ---
     function handlePaymentClick(event, studentId, isCurrentlyPaid) {
         event.preventDefault(); 
         if (isCurrentlyPaid) {
@@ -642,14 +741,10 @@
                 const student = classState.active.find(s => s.id === studentId);
                 let historico = student.historico_pagamentos || [];
                 
-                if (historico.length > 0) {
-                    historico.pop();
-                }
+                if (historico.length > 0) historico.pop();
 
                 let newDataUltimo = null;
-                if (historico.length > 0) {
-                    newDataUltimo = historico[historico.length - 1].data;
-                }
+                if (historico.length > 0) newDataUltimo = historico[historico.length - 1].data;
 
                 db.from('alunos').update({ 
                     paid: false, 
@@ -690,7 +785,6 @@
         if(confirm("Tem certeza que deseja apagar este pagamento permanentemente do histórico?")) {
             const student = classState.active.find(s => s.id === studentId);
             let historico = student.historico_pagamentos || [];
-            
             historico.splice(index, 1);
 
             const now = new Date();
@@ -703,23 +797,15 @@
                 const lastPag = historico[historico.length - 1];
                 newDataUltimo = lastPag.data;
                 const [ano, mes] = lastPag.data.split('-');
-                if (parseInt(mes) === currentMonth && parseInt(ano) === currentYear) {
-                    hasPaymentThisMonth = true;
-                }
+                if (parseInt(mes) === currentMonth && parseInt(ano) === currentYear) hasPaymentThisMonth = true;
             }
 
             const { error } = await db.from('alunos').update({
-                historico_pagamentos: historico,
-                paid: hasPaymentThisMonth,
-                data_ultimo_pagamento: newDataUltimo
+                historico_pagamentos: historico, paid: hasPaymentThisMonth, data_ultimo_pagamento: newDataUltimo
             }).eq('id', studentId);
 
-            if (!error) {
-                closeModal('view-history-modal');
-                fetchData();
-            } else {
-                alert("Erro ao apagar pagamento.");
-            }
+            if (!error) { closeModal('view-history-modal'); fetchData(); } 
+            else alert("Erro ao apagar pagamento.");
         }
     }
 
@@ -756,12 +842,10 @@
             `;
             container.appendChild(div);
         });
-        if(classState.tarefas.length === 0) {
-            container.innerHTML = `<p style="color:var(--text-light); width:100%; grid-column: 1 / -1;">Nenhum lembrete salvo.</p>`;
-        }
+        if(classState.tarefas.length === 0) container.innerHTML = `<p style="color:var(--text-light); width:100%; grid-column: 1 / -1;">Nenhum lembrete salvo.</p>`;
     }
 
-    // --- FUNÇÕES GERAIS ---
+    // --- FUNÇÕES GERAIS E WHATSAPP ---
     function enviarMensagemWp(tipo, fone, responsavel, aluno, valor) {
         if(!fone) return alert("Contato sem número registrado.");
         let msg = "";
@@ -774,10 +858,8 @@
             let amanha = new Date();
             amanha.setDate(amanha.getDate() + 1);
             let strAmanha = String(amanha.getDate()).padStart(2, '0') + '/' + String(amanha.getMonth() + 1).padStart(2, '0');
-            
             let dataRep = prompt("Qual a data programada para a reposição? (ex: 20/05)");
             if (dataRep === null) return;
-            
             msg = `Olá, ${respName}, tudo bem? Passando para avisar que amanhã no dia ${strAmanha} não haverá aula do(a) ${aluno}, reposição programada para o dia ${dataRep}.`;
         }
         window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -819,6 +901,7 @@
         win.document.close();
     }
 
+    // --- BOLETIM DE REFORÇO (REFERENTE AO MÊS PASSADO) ---
     function abrirModalBoletim(studentId) {
         const student = classState.active.find(s => s.id === studentId);
         if(!student) return;
@@ -828,17 +911,18 @@
         document.getElementById('boletim-notes').value = '';
 
         const now = new Date();
-        const currentMonth = now.getMonth() + 1;
-        const currentYear = now.getFullYear();
+        let monthPassado = now.getMonth(); // 0 a 11
+        let yearPassado = now.getFullYear();
+        if (monthPassado === 0) { monthPassado = 12; yearPassado -= 1; }
 
-        let presencasNoMes = 0;
+        let presencasNoMesPassado = 0;
         const presencas = student.historico_presencas || [];
         presencas.forEach(dataIso => {
             const [ano, mes] = dataIso.split('-');
-            if(parseInt(mes) === currentMonth && parseInt(ano) === currentYear) presencasNoMes++;
+            if(parseInt(mes) === monthPassado && parseInt(ano) === yearPassado) presencasNoMesPassado++;
         });
 
-        document.getElementById('boletim-presencas').innerText = presencasNoMes;
+        document.getElementById('boletim-presencas').innerText = presencasNoMesPassado;
         document.getElementById('boletim-modal').classList.add('active');
     }
 
@@ -850,9 +934,12 @@
         if(!student) return;
 
         const now = new Date();
+        let monthPassado = now.getMonth(); 
+        let yearPassado = now.getFullYear();
+        if (monthPassado === 0) { monthPassado = 12; yearPassado -= 1; }
+
         const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-        const mesExtenso = meses[now.getMonth()];
-        const currentYear = now.getFullYear();
+        const mesExtenso = meses[monthPassado - 1];
 
         const win = window.open('', '_blank');
         win.document.write(`
@@ -883,19 +970,19 @@
                 <div class="boletim">
                     <div class="header">
                         <h1>Reforço Super Baixinhos</h1>
-                        <h2>BOLETIM DE EVOLUÇÃO MENSAL</h2>
+                        <h2>BOLETIM DE EVOLUÇÃO</h2>
                     </div>
                     <div class="info-box">
                         <div><strong>Aluno(a):</strong> ${student.nome}</div>
-                        <div><strong>Mês:</strong> ${mesExtenso} / ${currentYear}</div>
+                        <div><strong>Mês de Referência:</strong> ${mesExtenso} / ${yearPassado}</div>
                     </div>
                     <div class="content-box">
                         <h3>Frequência Escolar</h3>
-                        <p style="font-size: 18px; margin:0;">O(A) aluno(a) obteve <strong>${presencasNoMes} presenças</strong> registradas neste mês de referência.</p>
+                        <p style="font-size: 18px; margin:0;">O(A) aluno(a) compareceu em <strong>${presencasNoMes} aulas de reforço no mês passado.</strong></p>
                     </div>
                     <div class="content-box">
                         <h3>Anotações da Professora e Evolução</h3>
-                        <div class="notes">${notes || 'Nenhuma anotação extra registrada para este mês.'}</div>
+                        <div class="notes">${notes || 'Nenhuma anotação extra registrada.'}</div>
                     </div>
                     <div class="footer">
                         <div class="assinatura">Assinatura da Professora</div>
@@ -909,6 +996,7 @@
         closeModal('boletim-modal');
     }
 
+    // --- MANIPULAÇÃO DE MODAIS EXISTENTES E CRUD ---
     function openAttendanceHistoryModal(studentId) {
         const student = classState.active.find(s => s.id === studentId);
         if (!student) return;
@@ -1125,6 +1213,7 @@
                 <td>
                     <div class="action-btns">
                         <button class="btn-attendance" onclick="openAttendanceHistoryModal(${student.id})" title="Ver Diário Completo">📅 Ver Datas</button>
+                        <button class="btn-evolucao" onclick="abrirModalEvolucao(${student.id})" title="Histórico de Evolução">📈 Evolução</button>
                         <button class="btn-boletim" onclick="abrirModalBoletim(${student.id})" title="Gerar Boletim Mensal">🎓 Boletim</button>
                     </div>
                 </td>
