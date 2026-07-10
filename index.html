@@ -123,7 +123,7 @@
         .parent-info { font-size: 0.9rem; color: #616161; font-weight: 600;}
         .whatsapp-link { display: inline-flex; align-items: center; gap: 4px; color: var(--whatsapp); text-decoration: none; font-weight: 800; background: #E8F5E9; padding: 2px 8px; border-radius: 8px; font-size: 0.8rem; }
         
-        .btn-wa { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; padding: 2px 6px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: background 0.2s;}
+        .btn-wa { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; padding: 4px 8px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: bold; transition: background 0.2s; display: inline-flex; align-items: center; justify-content: center;}
         .btn-wa:hover { background: #C8E6C9; }
         .btn-wa-falta { background: #FFF3E0; color: #F57F17; border-color: #FFECB3; }
         .btn-wa-falta:hover { background: #FFECB3; }
@@ -148,11 +148,11 @@
 
         /* Post-its Virtuais */
         .postit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .postit { background: var(--postit); padding: 20px; border-radius: 8px; box-shadow: 2px 4px 10px rgba(0,0,0,0.08); position: relative; border-left: 6px solid #FBC02D; transition: transform 0.2s; min-height: 120px;}
+        .postit { background: var(--postit); padding: 20px; border-radius: 8px; box-shadow: 2px 4px 10px rgba(0,0,0,0.08); position: relative; border-left: 6px solid #FBC02D; transition: transform 0.2s; min-height: 120px; display:flex; flex-direction:column;}
         .postit:hover { transform: translateY(-3px); }
         .postit.done { opacity: 0.6; text-decoration: line-through; border-left-color: #BDBDBD; background: #E0E0E0; }
-        .postit-text { font-size: 1.1rem; font-weight: 700; color: #424242; margin-bottom: 15px; white-space: pre-wrap; word-wrap: break-word;}
-        .postit-actions { display: flex; justify-content: space-between; position: absolute; bottom: 10px; width: calc(100% - 40px); }
+        .postit-text { font-size: 1.1rem; font-weight: 700; color: #424242; margin-bottom: 25px; white-space: pre-wrap; word-wrap: break-word;}
+        .postit-actions { display: flex; justify-content: space-between; align-items:flex-end; margin-top: auto; }
         .postit-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; }
 
         /* Modais */
@@ -177,6 +177,7 @@
             .days-selector { flex-direction: column; align-items: stretch; }
             .btn-add { width: 100%; }
             .day-header { flex-direction: column; gap: 10px; align-items: flex-start; }
+            .tabs { padding-bottom: 5px; }
         }
     </style>
 </head>
@@ -211,6 +212,7 @@
             <button class="tab-btn" onclick="switchTab('presenca')">Lista de Presença</button>
             <button class="tab-btn" onclick="switchTab('financeiro')">Controle Financeiro</button>
             <button class="tab-btn" onclick="switchTab('tarefas')">Lembretes</button>
+            <button class="tab-btn" onclick="switchTab('bilhetes')" style="color: var(--whatsapp);">Meus Bilhetes</button>
             <button class="tab-btn" onclick="switchTab('historico')">Histórico de Ex-Alunos</button>
         </div>
 
@@ -327,6 +329,28 @@
             </div>
             <div class="postit-grid" id="postits-container">
                 <!-- Post-its renderizados aqui -->
+            </div>
+        </div>
+
+        <!-- NOVA ABA: MEUS BILHETES (MENSAGENS) -->
+        <div id="tab-bilhetes" class="tab-content">
+            <div class="controls">
+                <h2 style="margin-bottom: 15px; color: var(--primary);">Meus Bilhetes Prontos</h2>
+                <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 15px;">Crie e salve mensagens (Ex: avisos de material, recesso, convites) para enviar rapidamente pelo WhatsApp sempre que precisar.</p>
+                
+                <div class="inputs-row">
+                    <input type="text" id="bilhete-title" class="w-full-mobile" placeholder="Título (Ex: Aviso de Feriado)" autocomplete="off">
+                </div>
+                <div class="inputs-row">
+                    <textarea id="bilhete-text" class="w-full-mobile" rows="4" placeholder="Escreva a mensagem completa aqui..."></textarea>
+                </div>
+                <div class="inputs-row">
+                    <button class="btn-add" style="max-width: 250px; background-color: var(--whatsapp); box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);" onclick="addBilhete()">Salvar Bilhete</button>
+                </div>
+            </div>
+            
+            <div class="postit-grid" id="bilhetes-container">
+                <!-- Bilhetes renderizados aqui -->
             </div>
         </div>
 
@@ -483,7 +507,7 @@
     const TOTAL_CAPACITY = MAX_DESKS * 4; // Terça a Sexta
     const dayNames = { 'terca': 'Terça', 'quarta': 'Quarta', 'quinta': 'Quinta', 'sexta': 'Sexta' };
 
-    let classState = { active: [], inactive: [], despesas: [], tarefas: [], planos: [] };
+    let classState = { active: [], inactive: [], despesas: [], tarefas: [], planos: [], bilhetes: [] };
 
     const hojePadrao = new Date().toISOString().split('T')[0];
     document.getElementById('expense-date').value = hojePadrao;
@@ -497,7 +521,7 @@
 
     db.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_IN') { showMainApp(); fetchData(); } 
-        else if (event === 'SIGNED_OUT') { showLoginScreen(); classState = { active: [], inactive: [], despesas: [], tarefas: [], planos: [] }; }
+        else if (event === 'SIGNED_OUT') { showLoginScreen(); classState = { active: [], inactive: [], despesas: [], tarefas: [], planos: [], bilhetes: [] }; }
     });
 
     async function handleLogin(event) {
@@ -533,6 +557,7 @@
         const { data: despesasData } = await db.from('despesas').select('*').order('data_despesa', { ascending: false });
         const { data: tarefasData } = await db.from('tarefas').select('*').order('id', { ascending: false });
         const { data: planosData } = await db.from('planos_aula').select('*');
+        const { data: bilhetesData } = await db.from('bilhetes').select('*').order('id', { ascending: false });
 
         if (alunosError) return console.error('Erro:', alunosError);
 
@@ -560,6 +585,7 @@
         classState.despesas = despesasData || [];
         classState.tarefas = tarefasData || [];
         classState.planos = planosData || [];
+        classState.bilhetes = bilhetesData || [];
 
         dateChangedHandler(); 
         renderDaysAndSummary();
@@ -567,6 +593,7 @@
         renderHistory();
         renderAttendance();
         renderTarefas();
+        renderBilhetes();
     }
 
     async function addStudent() {
@@ -662,7 +689,7 @@
         else { alert("Erro ao salvar presença."); event.preventDefault(); }
     }
 
-    // --- CONTROLE DE EVOLUÇÃO (NOVO) ---
+    // --- CONTROLE DE EVOLUÇÃO ---
     function abrirModalEvolucao(studentId) {
         const student = classState.active.find(s => s.id === studentId);
         if(!student) return;
@@ -714,9 +741,7 @@
             student.historico_evolucao = evolucoes;
             document.getElementById('evolucao-notes').value = '';
             renderTabelaEvolucao(student);
-        } else {
-            alert("Erro ao salvar evolução.");
-        }
+        } else alert("Erro ao salvar evolução.");
     }
 
     async function apagarEvolucao(studentId, index) {
@@ -725,15 +750,12 @@
             let evolucoes = student.historico_evolucao || [];
             evolucoes.splice(index, 1);
             const { error } = await db.from('alunos').update({ historico_evolucao: evolucoes }).eq('id', studentId);
-            if(!error) {
-                renderTabelaEvolucao(student);
-            } else {
-                alert("Erro ao apagar anotação.");
-            }
+            if(!error) renderTabelaEvolucao(student);
+            else alert("Erro ao apagar anotação.");
         }
     }
 
-    // --- PAGAMENTOS E LÓGICA DE ESTORNO ---
+    // --- PAGAMENTOS E ESTORNO ---
     function handlePaymentClick(event, studentId, isCurrentlyPaid) {
         event.preventDefault(); 
         if (isCurrentlyPaid) {
@@ -747,9 +769,7 @@
                 if (historico.length > 0) newDataUltimo = historico[historico.length - 1].data;
 
                 db.from('alunos').update({ 
-                    paid: false, 
-                    data_ultimo_pagamento: newDataUltimo,
-                    historico_pagamentos: historico
+                    paid: false, data_ultimo_pagamento: newDataUltimo, historico_pagamentos: historico
                 }).eq('id', studentId).then(() => fetchData());
             }
         } else {
@@ -785,6 +805,7 @@
         if(confirm("Tem certeza que deseja apagar este pagamento permanentemente do histórico?")) {
             const student = classState.active.find(s => s.id === studentId);
             let historico = student.historico_pagamentos || [];
+            
             historico.splice(index, 1);
 
             const now = new Date();
@@ -845,6 +866,65 @@
         if(classState.tarefas.length === 0) container.innerHTML = `<p style="color:var(--text-light); width:100%; grid-column: 1 / -1;">Nenhum lembrete salvo.</p>`;
     }
 
+    // --- BILHETES (MENSAGENS) - NOVO ---
+    async function addBilhete() {
+        const titulo = document.getElementById('bilhete-title').value.trim();
+        const mensagem = document.getElementById('bilhete-text').value.trim();
+        if(!titulo || !mensagem) return alert("Preencha o título e a mensagem.");
+        
+        const { error } = await db.from('bilhetes').insert([{ titulo, mensagem }]);
+        if(!error) {
+            document.getElementById('bilhete-title').value = '';
+            document.getElementById('bilhete-text').value = '';
+            fetchData();
+        } else alert("Erro ao salvar o bilhete.");
+    }
+    
+    async function deleteBilhete(id) {
+        if(confirm("Apagar este bilhete definitivamente?")) {
+            await db.from('bilhetes').delete().eq('id', id);
+            fetchData();
+        }
+    }
+    
+    window.copiarBilhete = function(id) {
+        const b = classState.bilhetes.find(x => x.id === id);
+        if(b) {
+            navigator.clipboard.writeText(b.mensagem).then(() => {
+                alert("Mensagem copiada com sucesso!");
+            }).catch(err => alert("Erro ao copiar."));
+        }
+    }
+    
+    window.enviarBilheteAvulso = function(id) {
+        const b = classState.bilhetes.find(x => x.id === id);
+        if(b) {
+            window.open(`https://wa.me/?text=${encodeURIComponent(b.mensagem)}`, '_blank');
+        }
+    }
+
+    function renderBilhetes() {
+        const container = document.getElementById('bilhetes-container');
+        container.innerHTML = '';
+        classState.bilhetes.forEach(b => {
+            const div = document.createElement('div');
+            div.className = 'postit';
+            div.style.borderLeftColor = 'var(--whatsapp)'; // Cor verde do WhatsApp
+            
+            div.innerHTML = `
+                <h3 style="color: var(--text-dark); margin-bottom: 10px; font-size: 1.1rem;">${b.titulo}</h3>
+                <div class="postit-text" style="font-size: 0.95rem; font-weight: normal; margin-bottom: 50px;">${b.mensagem}</div>
+                <div class="postit-actions" style="display: flex; gap: 8px; width: 100%;">
+                    <button class="btn-wa" onclick="copiarBilhete(${b.id})" title="Copiar Mensagem">📋 Copiar</button>
+                    <button class="btn-wa" onclick="enviarBilheteAvulso(${b.id})" title="Enviar no WhatsApp">💬 Enviar</button>
+                    <button class="postit-btn" style="color:var(--danger); margin-left: auto;" onclick="deleteBilhete(${b.id})" title="Excluir">🗑️</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        if(classState.bilhetes.length === 0) container.innerHTML = `<p style="color:var(--text-light); width:100%; grid-column: 1 / -1;">Nenhum bilhete salvo.</p>`;
+    }
+
     // --- FUNÇÕES GERAIS E WHATSAPP ---
     function enviarMensagemWp(tipo, fone, responsavel, aluno, valor) {
         if(!fone) return alert("Contato sem número registrado.");
@@ -865,6 +945,7 @@
         window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
+    // --- RELATÓRIOS E PDFS ---
     function gerarRecibo(aluno, responsavel, valor, dataStr) {
         const [ano, mes, dia] = dataStr.split('-');
         const win = window.open('', '_blank');
@@ -901,7 +982,6 @@
         win.document.close();
     }
 
-    // --- BOLETIM DE REFORÇO (REFERENTE AO MÊS PASSADO) ---
     function abrirModalBoletim(studentId) {
         const student = classState.active.find(s => s.id === studentId);
         if(!student) return;
@@ -911,7 +991,7 @@
         document.getElementById('boletim-notes').value = '';
 
         const now = new Date();
-        let monthPassado = now.getMonth(); // 0 a 11
+        let monthPassado = now.getMonth(); 
         let yearPassado = now.getFullYear();
         if (monthPassado === 0) { monthPassado = 12; yearPassado -= 1; }
 
@@ -996,7 +1076,7 @@
         closeModal('boletim-modal');
     }
 
-    // --- MANIPULAÇÃO DE MODAIS EXISTENTES E CRUD ---
+    // --- INTERFACE (Modais, Abas, etc) ---
     function openAttendanceHistoryModal(studentId) {
         const student = classState.active.find(s => s.id === studentId);
         if (!student) return;
